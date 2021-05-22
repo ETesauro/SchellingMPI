@@ -1,0 +1,49 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "MPI compile and run active file (LIBRARY)",
+            "command": "mpicc -c ${fileBasenameNoExtension}.c -o ../files_o/${fileBasenameNoExtension}.o && mpicc -c ../mycollective.c -o ../files_o/mycollective.o && mpicc -o ../files_out/${fileBasenameNoExtension}.out ../files_o/mycollective.o ../files_o/${fileBasenameNoExtension}.o && mpirun --allow-run-as-root -np ${input:np} ../files_out/${fileBasenameNoExtension}.out",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": [
+                "$eslint-compact"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${relativeFileDirname}"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "MPI compile and run active file (NORMAL)",
+            "command": "mpicc ${fileBasenameNoExtension}.c -o ../files_out/${fileBasenameNoExtension}.out && mpirun --allow-run-as-root -np ${input:np} ../files_out/${fileBasenameNoExtension}.out",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": [
+                "$eslint-compact"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${relativeFileDirname}"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "np",
+            "description": "Number of processes:",
+            "default": "4",
+            "type": "promptString"
+        }
+    ]
+}
