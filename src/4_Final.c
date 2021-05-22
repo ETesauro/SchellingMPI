@@ -14,8 +14,8 @@
 #define TEST 0
 
 // #region Matrice
-#define ROWS 5     // Numero di righe della matrice
-#define COLUMNS 5  // Numero di colonne della matrice
+#define ROWS 100     // Numero di righe della matrice
+#define COLUMNS 100  // Numero di colonne della matrice
 // #endregion
 
 // #region Agenti
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
     // * Stampa matrice finale e calcolo della soddisfazione totale
     if (rank == ROOT) {
         printf("\n");
-        //print_matrix(ROWS, COLUMNS, matrix);
+        print_matrix(ROWS, COLUMNS, matrix);
         calculate_total_satisfaction(rank, world_size, matrix);
         save_to_file(ROWS, COLUMNS, "final.html", matrix);
         printf("\n🕒 Time in ms = %f\n", end_time - start_time);
@@ -670,9 +670,9 @@ void calculate_total_satisfaction(int rank, int world_size, char *matrix) {
     printf("Agenti soddisfatti: %d\n", satisfied_agents);
     if (index != 0) {
         printf("Agenti non soddisfatti: %d\n", index);
-        printf("| ");
+        /* printf("| ");
         for (int i = 0; i < index; i++)
-            printf(YELLOW("%c") ": [%d][%d] | ", matrix[not_satisfied_agents[i].destination_row + not_satisfied_agents[i].destination_column], not_satisfied_agents[i].destination_row / COLUMNS, not_satisfied_agents[i].destination_column);
+            printf(YELLOW("%c") ": [%d][%d] | ", matrix[not_satisfied_agents[i].destination_row + not_satisfied_agents[i].destination_column], not_satisfied_agents[i].destination_row / COLUMNS, not_satisfied_agents[i].destination_column); */
     }
     printf("\n\n🟢 Percentuale di soddisfazione: %.3f%%\n", average);
 
