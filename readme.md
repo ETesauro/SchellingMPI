@@ -18,36 +18,35 @@ Al suo interno è possibile definire la grandezza della matrice di partenza a pr
 
 ## Parallel Solution Description
 
-La soluzione sviluppata segue X passi ben definiti.
+La soluzione sviluppata segue 8 passi ben definiti.
 
-- Il Master inizializza la matrice utilizzando le costanti definite all'interno del programma. Di default, questi valori sono:
+1. Il Master inizializza la matrice utilizzando le costanti definite all'interno del programma. Di default, questi valori sono:
 
-  - Numero di righe: **100**
-  - Numero di colonne: **100**
-  - Percentuale di agenti '**X**' all'interno della matrice: **30%**
-  - Percentuale di agenti '**O**' all'interno della matrice: **30%**
-  - Percentuale di soddisfazione degli agenti: **33.3%**
+   - Numero di righe: **100**
+   - Numero di colonne: **100**
+   - Percentuale di agenti '**X**' all'interno della matrice: **30%**
+   - Percentuale di agenti '**O**' all'interno della matrice: **30%**
+   - Percentuale di soddisfazione degli agenti: **33.3%**
 
-- Suddivisione della matrice per numero di righe tra i vari processi
-- Esecuzione per un numero di volte pari MAX_STEP delle seguenti operazioni:
+2. Suddivisione della matrice per numero di righe tra i vari processi
+3. Scambio delle righe tra i processi adiacenti per il calcolo della soddisfazione (locale) degli agenti della sottomatrice (la prima riga con il processo precedente e l'ultima riga con il processo successivo).
+4. Calcolo della soddisfazione di ogni agente della sottomatrice
+5. Calcolo del numero di celle vuote di ogni sottomatrice e delle posizioni in cui sono situate
+6. Scambio delle posizioni calcolate al punto precedente tra tutti i processi per l'assegnazione delle celle di destinazione in cui gli agenti possono spostarsi
+7. Spostamento degli agenti
+8. Recupero della matrice finale per calcolare la soddisfazione globale
 
-  - Scambio delle righe tra i processi adiacenti per il calcolo della soddisfazione (locale) degli agenti della sottomatrice (la prima riga con il processo precedente e l'ultima riga con il processo successivo).
-  - Calcolo della soddisfazione (locale) di ogni agente della sottomatrice
-  - Calcolo del numero di celle vuote di ogni sottomatrice e delle posizioni in cui sono situate
-  - Scambio delle posizioni calcolate al punto precedente tra tutti i processi per l'assegnazione delle celle di destinazione in cui gli agenti possono spostarsi
-  - Spostamento degli agenti
-
-- Recupero della matrice finale per calcolare la soddisfazione globale
+> Nota: I punti **3-7** vengono ripetuti per un numero di volte pari **MAX_STEP**.
 
 ## Project structure
 
 - src/
-  - _Schelling_MPI.c_: file contenente il codice sorgente del programma
+  - _**Schelling_MPI.c**_: file contenente il codice sorgente del programma
 - files_out/
-  - _Schelling_MPI.out_: file eseguibile del programma
-  - _Schelling_MPI.html_: file generato al termine dell'esecuzione del programma che contiene la matrice finale.
+  - _**Schelling_MPI.out**_: file eseguibile del programma
+  - _**Schelling_MPI.html**_: file generato al termine dell'esecuzione del programma che contiene la matrice finale
 - doc/
-  - _mdb.min.css_: CSS utilizzato per la pagina HTML generata.
+  - _**mdb.min.css**_: CSS utilizzato per la pagina HTML generata
 
 ## Execution instructions
 
@@ -74,14 +73,14 @@ Dalla **root** del progetto:
 La matrice viene inizializzata dal Master in base ai parametri definiti all'interno del codice sorgente del programma.\
 L'agente da inserire in una cella **[i][j]** della matrice viene determinato calcolando un **numero casuale _num_** tra 0 e 99 e si inserisce:
 
-- X ->&emsp;se 0 &le; num &lt; AGENT_X_PERCENTAGE
-- O ->&emsp;se AGENT_X_PERCENTAGE &le; num &lt; AGENT_X_PERCENTAGE + AGENT_O_PERCENTAGE
-- EMPTY (' ') ->&emsp;se AGENT_X_PERCENTAGE + AGENT_O_PERCENTAGE &le; num &lt; 100
+- **X** ->&emsp;se 0 &le; num &lt; AGENT_X_PERCENTAGE
+- **O** ->&emsp;se AGENT_X_PERCENTAGE &le; num &lt; AGENT_X_PERCENTAGE + AGENT_O_PERCENTAGE
+- **EMPTY** (' ') ->&emsp;se AGENT_X_PERCENTAGE + AGENT_O_PERCENTAGE &le; num &lt; 100
 
 Le uniche regole da rispettare sono:
 
-- La somma della percentuale di probabilità di avere un agente 'X' o 'O' all'interno della matrice non deve superare 99.
-- Non è possibile creare una matrice con un numero di righe maggiore del numero di processi con cui si decide di eseguire il programma.
+- La somma della percentuale di probabilità di avere un agente 'X' o 'O' all'interno della matrice non deve superare 99
+- Non è possibile creare una matrice con un numero di righe maggiore del numero di processi con cui si decide di eseguire il programma
 
 ### Suddivisione del carico di lavoro
 
