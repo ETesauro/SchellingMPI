@@ -95,34 +95,32 @@ Inoltre, sono state assegnate **ulteriori 2 righe** ai processi con **'rank &gt;
 A questo punto, la matrice è stata suddivisa utilizzando la funzione **MPI_Scatterv()**;
 
 ```C
-    // Calcolo della porzione della matrice da assegnare a ciascun processo
-    subdivide_matrix(world_size, displacements, sendcounts, rows_per_process);
+// Calcolo della porzione della matrice da assegnare a ciascun processo
+subdivide_matrix(world_size, displacements, sendcounts, rows_per_process);
 
-    //Suddivisione delle righe tra i processi
-    sub_matrix = malloc(rows_per_process[rank] * COLUMNS * sizeof(char *));
-    MPI_Scatterv(matrix, sendcounts, displacements, MPI_CHAR, sub_matrix, rows_per_process[rank] * COLUMNS, MPI_CHAR, ROOT, MPI_COMM_WORLD);
+//Suddivisione delle righe tra i processi
+sub_matrix = malloc(rows_per_process[rank] * COLUMNS * sizeof(char *));
+MPI_Scatterv(matrix, sendcounts, displacements, MPI_CHAR, sub_matrix, rows_per_process[rank] * COLUMNS, MPI_CHAR, ROOT, MPI_COMM_WORLD);
 ```
 
 ### Scambio delle righe tra processi adiacenti e calcolo della soddisfazione (locale)
-
-<p style="color: #00aaff;"> DOING </p>
 
 Una volta che ogni processo ha ricevuto la propria porzione di matrice, si procede calcolando la soddisfazione di ogni agente all'interno di quest'ultima.\
 Per fare ciò, è stato necessario scambiare le proprie righe più esterne con i processi adiacenti, come mostra il seguente snippet:
 
 ```C
-    if (rank != 0) {
-        MPI_Isend(sub_matrix, COLUMNS, MPI_CHAR, neighbour_down, 99, communicator, &request_up);
-        MPI_Irecv(sub_matrix + neighbour_down_row_pos, COLUMNS, MPI_CHAR, neighbour_down, 99, communicator, &request_up);
-    }
+if (rank != 0) {
+  MPI_Isend(sub_matrix, COLUMNS, MPI_CHAR, neighbour_down, 99, communicator, &request_up);
+  MPI_Irecv(sub_matrix + neighbour_down_row_pos, COLUMNS, MPI_CHAR, neighbour_down, 99, communicator, &request_up);
+}
 
-    if (rank != world_size - 1) {
-        MPI_Isend(sub_matrix + my_last_row_pos, COLUMNS, MPI_CHAR, neighbour_up, 99, communicator, &request_down);
-        MPI_Irecv(sub_matrix + neighbour_up_row_pos, COLUMNS, MPI_CHAR, neighbour_up, 99, communicator, &request_down);
-    }
+if (rank != world_size - 1) {
+  MPI_Isend(sub_matrix + my_last_row_pos, COLUMNS, MPI_CHAR, neighbour_up, 99, communicator, &request_down);
+  MPI_Irecv(sub_matrix + neighbour_up_row_pos, COLUMNS, MPI_CHAR, neighbour_up, 99, communicator, &request_down);
+}
 ```
 
-Il calcolo della soddisfazione restituisce una nuova matrice di dimensioni esattamente uguali a quelle della sottomatrice senza le righe aggiuntive. Il motivo per cui si è scelto questo tipo di implementazione sta nel fatto che questa nuova matrice (**want_move**) verrà utilizzata successivamente quando verranno effettuati gli spostamenti degli agenti che non sono soddisfatti.\
+Il calcolo della soddisfazione restituisce una **nuova matrice** di dimensioni esattamente uguali a quelle della sottomatrice **senza le righe aggiuntive**. Il motivo per cui si è scelto questo tipo di implementazione sta nel fatto che questa nuova matrice (**want_move**) verrà utilizzata successivamente quando verranno effettuati gli spostamenti degli agenti che non sono soddisfatti.\
 Questa matrice, è formata da **un intero** per ogni cella **[i][j]**:
 
 - **0** -> l'agente è soddisfatto e **NON** vuole spostarsi
@@ -134,7 +132,7 @@ Nel caso in cui un agente si trovi in un bordo della matrice, ovviamente i vicin
 
 ### Spostamento degli agenti
 
-<p style="color: orange;"> TODO </p>
+<p style="color: #00aaff;"> DOING </p>
 
 ## Correctness discussion
 
