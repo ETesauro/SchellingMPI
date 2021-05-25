@@ -49,7 +49,7 @@ La soluzione sviluppata segue X passi ben definiti.
 - doc/
   - _mdb.min.css_: CSS utilizzato per la pagina HTML generata.
 
-## Getting started
+## Execution instructions
 
 Dalla **root** del progetto:
 
@@ -69,9 +69,33 @@ Dalla **root** del progetto:
 
 ## Implementation details
 
+### Inizializzazione della matrice
+
+La matrice viene inizializzata dal Master in base ai parametri definiti all'interno del codice sorgente del programma.\
+L'agente da inserire in una cella **[i][j]** della matrice viene determinato calcolando un **numero casuale _num_** tra 0 e 99 e si inserisce:
+
+- X ->&emsp;se 0 &le; num &lt; AGENT_X_PERCENTAGE
+- O ->&emsp;se AGENT_X_PERCENTAGE &le; num &lt; AGENT_X_PERCENTAGE + AGENT_O_PERCENTAGE
+- EMPTY (' ') ->&emsp;se AGENT_X_PERCENTAGE + AGENT_O_PERCENTAGE &le; num &lt; 100
+
+Le uniche regole da rispettare sono:
+
+- La somma della percentuale di probabilità di avere un agente 'X' o 'O' all'interno della matrice non deve superare 99.
+- Non è possibile creare una matrice con un numero di righe maggiore del numero di processi con cui si decide di eseguire il programma.
+
+### Suddivisione del carico di lavoro
+
 <p style="color: #00aaff;"> DOING </p>
 
-## Execution instructions
+### Scambio delle righe tra processi adiacenti
+
+<p style="color: orange;"> TODO </p>
+
+### Calcolo della soddisfazione (locale)
+
+<p style="color: orange;"> TODO </p>
+
+### Spostamento degli agenti
 
 <p style="color: orange;"> TODO </p>
 

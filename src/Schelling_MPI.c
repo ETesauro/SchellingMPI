@@ -14,8 +14,8 @@
 #define TEST 0
 
 // #region Matrice
-#define ROWS 100     // Numero di righe della matrice
-#define COLUMNS 100  // Numero di colonne della matrice
+#define ROWS 5     // Numero di righe della matrice
+#define COLUMNS 5  // Numero di colonne della matrice
 // #endregion
 
 // #region Agenti
@@ -35,7 +35,6 @@
 
 // #region Utils
 #define RAND(min, max) ((rand() % (max)) + min)
-
 #define BLUE(string) "\033[1;34m" string "\x1b[0m"
 #define RED(string) "\033[1;31m" string "\x1b[0m"
 #define YELLOW(string) "\033[1;33m" string "\x1b[0m"
