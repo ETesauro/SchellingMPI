@@ -107,7 +107,30 @@ A questo punto, la matrice è stata suddivisa utilizzando la funzione **MPI_Scat
 
 <p style="color: #00aaff;"> DOING </p>
 
-Una volta che ogni processo ha ricevuto la propria porzione di matrice, si procede calcolando la soddisfazione di ogni agente all'interno di quest'ultima.
+Una volta che ogni processo ha ricevuto la propria porzione di matrice, si procede calcolando la soddisfazione di ogni agente all'interno di quest'ultima.\
+Per fare ciò, è stato necessario scambiare le proprie righe più esterne con i processi adiacenti, come mostra il seguente snippet:
+
+```C
+    if (rank != 0) {
+        MPI_Isend(sub_matrix, COLUMNS, MPI_CHAR, neighbour_down, 99, communicator, &request_up);
+        MPI_Irecv(sub_matrix + neighbour_down_row_pos, COLUMNS, MPI_CHAR, neighbour_down, 99, communicator, &request_up);
+    }
+
+    if (rank != world_size - 1) {
+        MPI_Isend(sub_matrix + my_last_row_pos, COLUMNS, MPI_CHAR, neighbour_up, 99, communicator, &request_down);
+        MPI_Irecv(sub_matrix + neighbour_up_row_pos, COLUMNS, MPI_CHAR, neighbour_up, 99, communicator, &request_down);
+    }
+```
+
+Il calcolo della soddisfazione restituisce una nuova matrice di dimensioni esattamente uguali a quelle della sottomatrice senza le righe aggiuntive. Il motivo per cui si è scelto questo tipo di implementazione sta nel fatto che questa nuova matrice (**want_move**) verrà utilizzata successivamente quando verranno effettuati gli spostamenti degli agenti che non sono soddisfatti.\
+Questa matrice, è formata da **un intero** per ogni cella **[i][j]**:
+
+- **0** -> l'agente è soddisfatto e **NON** vuole spostarsi
+- **1** -> l'agente **NON** è soddisfatto e vuole spostarsi
+- **-1** -> la cella in questione è vuota ed è utilizzabile per ospitare agenti che vogliono muoversi
+
+Ogni agente è soddisfatto se intorno a lui ha almeno il **33.3% di agenti simili**. Questo vuol dire che le celle contenenti l'agente opposto oppure quelle vuote sono considerate non corrette.
+Nel caso in cui un agente si trovi in un bordo della matrice, ovviamente i vicini non saranno 8 ma saranno da calcolare.
 
 ### Spostamento degli agenti
 

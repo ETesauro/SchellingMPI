@@ -14,8 +14,8 @@
 #define TEST 0
 
 // #region Matrice
-#define ROWS 100     // Numero di righe della matrice
-#define COLUMNS 100  // Numero di colonne della matrice
+#define ROWS 10     // Numero di righe della matrice
+#define COLUMNS 10  // Numero di colonne della matrice
 // #endregion
 
 // #region Agenti
@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
         else  */
         if (!init_matrix(matrix, AGENT_O_PERCENTAGE, AGENT_X_PERCENTAGE))
             err_finish(sendcounts, displacements, rows_per_process);
-        //print_matrix(ROWS, COLUMNS, matrix);
+        print_matrix(ROWS, COLUMNS, matrix);
     }
 
     // * Calcolo della porzione della matrice da assegnare a ciascun processo
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 
     // * Comincia l'esecuzione
     for (int i = 0; i < MAX_STEP; i++) {
-        exchange_rows(rank, world_size, total_rows, sub_matrix, MPI_COMM_WORLD);                                  // Scambio le righe tra i processi
+        exchange_rows(rank, world_size, original_rows, sub_matrix, MPI_COMM_WORLD);                               // Scambio le righe tra i processi
         want_move = evaluate_move(rank, world_size, original_rows, total_rows, sub_matrix, &unsatisfied_agents);  // Vedo chi si vuole spostare
 
         local_void_cells = calculate_local_void_cells(original_rows, sub_matrix, displacements[rank], &number_of_local_void_cells);                                            // Calcolo le mie celle vuote
@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
     // * Stampa matrice finale e calcolo della soddisfazione totale
     if (rank == ROOT) {
         printf("\n");
-        //print_matrix(ROWS, COLUMNS, matrix);
+        print_matrix(ROWS, COLUMNS, matrix);
         calculate_total_satisfaction(rank, world_size, matrix);
         save_to_file(ROWS, COLUMNS, "../files_out/Schelling_MPI.html", matrix);
         printf("\n🕒 Time in ms = %f\n", end_time - start_time);
@@ -244,26 +244,34 @@ int subdivide_matrix(int world_size, int *displacements, int *sendcounts, int *r
     return 1;
 }
 
-void exchange_rows(int rank, int world_size, int total_rows, char *sub_matrix, MPI_Comm communicator) {
+void exchange_rows(int rank, int world_size, int original_rows, char *sub_matrix, MPI_Comm communicator) {
     int neighbour_up, neighbour_down;
     MPI_Status status;
-    MPI_Request request;
+    MPI_Request request_up;
+    MPI_Request request_down;
 
     neighbour_up = (rank + 1) % world_size;
     neighbour_down = (rank + world_size - 1) % world_size;
 
-    int index = (rank == 0 || rank == world_size - 1) ? 1 : 2;
+    int my_last_row_pos = (original_rows - 1) * COLUMNS;                           // Indice della mia ultima riga (quella che devo mandare al vicino superiore)
+    int neighbour_down_row_pos = original_rows * COLUMNS;                          // Indice della riga dove andrò a 'salvare' l'ultima riga del vicino precedente
+    int neighbour_up_row_pos = (original_rows + ((rank == 0) ? 0 : 1)) * COLUMNS;  //Indice della riga dove andrò a 'salvare' la prima riga del vicino superiore
 
     if (rank != 0) {
-        // Prima riga: a partire da 0 mando COLUMNS elementi
-        MPI_Isend(sub_matrix, COLUMNS, MPI_CHAR, neighbour_down, 99, communicator, &request);
-        MPI_Recv(sub_matrix + ((total_rows - index) * COLUMNS), COLUMNS, MPI_CHAR, neighbour_down, 99, communicator, &status);
+        MPI_Isend(sub_matrix, COLUMNS, MPI_CHAR, neighbour_down, 99, communicator, &request_up);
+        MPI_Irecv(sub_matrix + neighbour_down_row_pos, COLUMNS, MPI_CHAR, neighbour_down, 99, communicator, &request_up);
     }
 
     if (rank != world_size - 1) {
-        // Ultima riga: A partire da ((total_rows - index - 1) * COLUMNS) mando COLUMNS elementi
-        MPI_Isend(sub_matrix + ((total_rows - index - 1) * COLUMNS), COLUMNS, MPI_CHAR, neighbour_up, 99, communicator, &request);
-        MPI_Recv(sub_matrix + ((total_rows - index + ((rank == 0) ? 0 : 1)) * COLUMNS), COLUMNS, MPI_CHAR, neighbour_up, 99, communicator, &status);
+        MPI_Isend(sub_matrix + my_last_row_pos, COLUMNS, MPI_CHAR, neighbour_up, 99, communicator, &request_down);
+        MPI_Irecv(sub_matrix + neighbour_up_row_pos, COLUMNS, MPI_CHAR, neighbour_up, 99, communicator, &request_down);
+    }
+
+    if (rank != 0) {
+        MPI_Wait(&request_up, NULL);
+    }
+    if (rank != world_size - 1) {
+        MPI_Wait(&request_down, NULL);
     }
 }
 
