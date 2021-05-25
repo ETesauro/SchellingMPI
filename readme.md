@@ -18,16 +18,15 @@ Al suo interno è possibile definire la grandezza della matrice di partenza a pr
 
 ## Parallel Solution Description
 
-<p style="color: #00aaff;"> DOING </p>
 La soluzione sviluppata segue X passi ben definiti.\
 
 - Il Master inizializza la matrice utilizzando le costanti definite all'interno del programma. Di default, questi valori sono:
 
-  - numero di righe: **100**
-  - numero di colonne: **100**
-  - percentuale di agenti '**X**' all'interno della matrice: **30%**
-  - percentuale di agenti '**O**' all'interno della matrice: **30%**
-  - percentuale di soddisfazione degli agenti: **33.3%**
+  - Numero di righe: **100**
+  - Numero di colonne: **100**
+  - Percentuale di agenti '**X**' all'interno della matrice: **30%**
+  - Percentuale di agenti '**O**' all'interno della matrice: **30%**
+  - Percentuale di soddisfazione degli agenti: **33.3%**
 
 - Suddivisione della matrice per numero di righe tra i vari processi
 - Esecuzione per un numero di volte pari MAX_STEP delle seguenti operazioni:
@@ -40,9 +39,35 @@ La soluzione sviluppata segue X passi ben definiti.\
 
 - Recupero della matrice finale per calcolare la soddisfazione globale
 
+## Project structure
+
+- src/
+  - _Schelling_MPI.c_: file contenente il codice sorgente del programma
+- files_out/
+  - _Schelling_MPI.out_: file eseguibile del programma
+  - _Schelling_MPI.html_: file generato al termine dell'esecuzione del programma che contiene la matrice finale.
+
+## Getting started
+
+Dalla **root** del progetto:
+
+1. Compilare il programma con
+
+   ```sh
+   mpicc src/Schelling_MPI.c -o files_out/Schelling_MPI.out
+   ```
+
+2. Eseguire il programma con
+
+   ```sh
+   mpirun --allow-run-as-root -np X files_out/Schelling_MPI.out
+   ```
+
+   dove 'X' è un numero intero.
+
 ## Implementation details
 
-<p style="color: orange;"> TODO </p>
+<p style="color: #00aaff;"> DOING </p>
 
 ## Execution instructions
 
