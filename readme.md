@@ -11,6 +11,8 @@ Progetto per l'esame di **Programmazione Concorrente e Parallela su Cloud**.
 
 Il modello di segregazione di Schelling è un modello agent-based che dimostra che avere persone con una preferenza "lieve" all'interno del proprio gruppo nei confronti nel gruppo stesso, porta inevitabilmente ad una società segregata.
 
+![](https://spaceandtim.es/assets/uploads/Vinkovic_PNAS_release.png)
+
 L'obiettivo di tale progetto è quello di implementare il modello di segregazione di Schelling creando un programma scritto in linguaggio C ed utilizzando la libreria Open MPI.
 
 Viene fornito un unico file (Schelling.c) che necessita di essere prima compilato e, poi, eseguito.\
