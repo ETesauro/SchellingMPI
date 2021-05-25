@@ -92,13 +92,22 @@ Inoltre, sono state assegnate **ulteriori 2 righe** ai processi con **'rank &gt;
 
 > Nota: I processi con **'rank == 0'** e **'rank == world_size - 1'** ricevono una singola riga in più perchè si è scelto di non implementare la matrice come un array circolare e, quindi, questi processi non sono vicini.
 
-### Scambio delle righe tra processi adiacenti
+A questo punto, la matrice è stata suddivisa utilizzando la funzione **MPI_Scatterv()**;
 
-<p style="color: orange;"> TODO </p>
+```C
+    // Calcolo della porzione della matrice da assegnare a ciascun processo
+    subdivide_matrix(world_size, displacements, sendcounts, rows_per_process);
 
-### Calcolo della soddisfazione (locale)
+    //Suddivisione delle righe tra i processi
+    sub_matrix = malloc(rows_per_process[rank] * COLUMNS * sizeof(char *));
+    MPI_Scatterv(matrix, sendcounts, displacements, MPI_CHAR, sub_matrix, rows_per_process[rank] * COLUMNS, MPI_CHAR, ROOT, MPI_COMM_WORLD);
+```
 
-<p style="color: orange;"> TODO </p>
+### Scambio delle righe tra processi adiacenti e calcolo della soddisfazione (locale)
+
+<p style="color: #00aaff;"> DOING </p>
+
+Una volta che ogni processo ha ricevuto la propria porzione di matrice, si procede calcolando la soddisfazione di ogni agente all'interno di quest'ultima.
 
 ### Spostamento degli agenti
 

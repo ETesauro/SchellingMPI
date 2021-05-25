@@ -14,8 +14,8 @@
 #define TEST 0
 
 // #region Matrice
-#define ROWS 5     // Numero di righe della matrice
-#define COLUMNS 5  // Numero di colonne della matrice
+#define ROWS 100     // Numero di righe della matrice
+#define COLUMNS 100  // Numero di colonne della matrice
 // #endregion
 
 // #region Agenti
@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
 
     // * Suddivisione delle righe tra i processi
     sub_matrix = malloc(rows_per_process[rank] * COLUMNS * sizeof(char *));
-    MPI_Scatterv(matrix, sendcounts, displacements, MPI_CHAR, sub_matrix, COLUMNS * ((ROWS / world_size) + 1), MPI_CHAR, ROOT, MPI_COMM_WORLD);
+    MPI_Scatterv(matrix, sendcounts, displacements, MPI_CHAR, sub_matrix, rows_per_process[rank] * COLUMNS, MPI_CHAR, ROOT, MPI_COMM_WORLD);
 
     // * Calcolo di quante righe 'originali' ha il processo e di quante ne ha 'totali'
     int total_rows = rows_per_process[rank];
@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
     // * Stampa matrice finale e calcolo della soddisfazione totale
     if (rank == ROOT) {
         printf("\n");
-        print_matrix(ROWS, COLUMNS, matrix);
+        //print_matrix(ROWS, COLUMNS, matrix);
         calculate_total_satisfaction(rank, world_size, matrix);
         save_to_file(ROWS, COLUMNS, "../files_out/Schelling_MPI.html", matrix);
         printf("\n🕒 Time in ms = %f\n", end_time - start_time);
