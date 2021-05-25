@@ -25,8 +25,8 @@ La soluzione sviluppata segue X passi ben definiti.\
 
   - numero di righe: **100**
   - numero di colonne: **100**
-  - percentuale di agenti '<p style="color: #00aaff; display:inline">X</p>' all'interno della matrice: **30%**
-  - percentuale di agenti '<p style="color: red; display:inline">O</p>' all'interno della matrice: **30%**
+  - percentuale di agenti '**X**' all'interno della matrice: **30%**
+  - percentuale di agenti '**O**' all'interno della matrice: **30%**
   - percentuale di soddisfazione degli agenti: **33.3%**
 
 - Suddivisione della matrice per numero di righe tra i vari processi
