@@ -84,7 +84,13 @@ Le uniche regole da rispettare sono:
 
 ### Suddivisione del carico di lavoro
 
-<p style="color: #00aaff;"> DOING </p>
+Tutti i processi calcolano quante righe della matrice dovranno ricevere. Questo significa che ogni processo si occuperà di **'numero di righe ricevute &#215; numero di colonne'** elementi.
+
+In base al numero di righe della matrice di partenza e al numero di processi con cui si esegue il programma, viene effettuata la divisione tra questi due valori e se il '**resto &gt; 0**' viene assegnata una riga in più al processo in questione.
+
+Inoltre, sono state assegnate **ulteriori 2 righe** ai processi con **'rank &gt; 0'** e **'rank &lt; world_size-1'** e solo **'una ulteriore riga'** ai processi con **'rank == 0'** e **'rank == world_size - 1'** per 'ospitare' le righe dei processi adiacenti.
+
+> Nota: I processi con **'rank == 0'** e **'rank == world_size - 1'** ricevono una singola riga in più perchè si è scelto di non implementare la matrice come un array circolare e, quindi, questi processi non sono vicini.
 
 ### Scambio delle righe tra processi adiacenti
 
