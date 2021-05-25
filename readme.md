@@ -79,8 +79,8 @@ L'agente da inserire in una cella **[i][j]** della matrice viene determinato cal
 
 Le uniche regole da rispettare sono:
 
-- La somma della percentuale di probabilità di avere un agente 'X' o 'O' all'interno della matrice non deve superare 99
-- Non è possibile creare una matrice con un numero di righe maggiore del numero di processi con cui si decide di eseguire il programma
+- La somma della percentuale di probabilità di avere un agente 'X' o 'O' all'interno della matrice **non deve superare 99**
+- Non è possibile creare una matrice con un numero di righe **maggiore** del numero di processi con cui si decide di eseguire il programma
 
 ### Suddivisione del carico di lavoro
 
