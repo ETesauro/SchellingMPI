@@ -9,7 +9,7 @@ Progetto per l'esame di **Programmazione Concorrente e Parallela su Cloud**.
 
 ## Introduction
 
-Il modello di segregazione di Schelling è un modello agent-based che dimostra che avere persone con una preferenza "lieve" all'interno del proprio gruppo nei confronti nel gruppo stesso, porta inevitabilmente ad una società segregata.\
+Il modello di segregazione di Schelling è un modello agent-based che dimostra che avere persone con una preferenza "lieve" all'interno del proprio gruppo nei confronti nel gruppo stesso, porta inevitabilmente ad una società segregata.
 
 L'obiettivo di tale progetto è quello di implementare il modello di segregazione di Schelling creando un programma scritto in linguaggio C ed utilizzando la libreria Open MPI.
 
@@ -18,7 +18,7 @@ Al suo interno è possibile definire la grandezza della matrice di partenza a pr
 
 ## Parallel Solution Description
 
-La soluzione sviluppata segue X passi ben definiti.\
+La soluzione sviluppata segue X passi ben definiti.
 
 - Il Master inizializza la matrice utilizzando le costanti definite all'interno del programma. Di default, questi valori sono:
 
@@ -46,6 +46,8 @@ La soluzione sviluppata segue X passi ben definiti.\
 - files_out/
   - _Schelling_MPI.out_: file eseguibile del programma
   - _Schelling_MPI.html_: file generato al termine dell'esecuzione del programma che contiene la matrice finale.
+- doc/
+  - _mdb.min.css_: CSS utilizzato per la pagina HTML generata.
 
 ## Getting started
 
