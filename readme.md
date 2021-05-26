@@ -7,6 +7,16 @@ Progetto per l'esame di **Programmazione Concorrente e Parallela su Cloud**.
 - MD5: **4bc390e61c1cd2a4001199d94b8d334d**
 - Amazon EC2 instance types: **t2.2xlarge**
 
+## Summary
+
+[- Introduction](#Introduction)\
+[- Parallel Solution Description](#Parallel-Solution-Description)\
+[- Project structure](#Project-structure)\
+[- Execution instructions](#Execution-instructions)\
+[- Implementation details](#Implementation-details)\
+[- Correctness discussion](#Correctness-discussion)\
+[- Benchmarks](#Benchmarks)
+
 ## Introduction
 
 Il modello di segregazione di Schelling è un modello agent-based che dimostra che avere persone con una preferenza "lieve" all'interno del proprio gruppo nei confronti nel gruppo stesso, porta inevitabilmente ad una società segregata.
