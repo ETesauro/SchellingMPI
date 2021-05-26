@@ -9,13 +9,13 @@ Progetto per l'esame di **Programmazione Concorrente e Parallela su Cloud**.
 
 ## Summary
 
-[- Introduction](#Introduction)\
-[- Parallel Solution Description](#Parallel-Solution-Description)\
-[- Project structure](#Project-structure)\
-[- Execution instructions](#Execution-instructions)\
-[- Implementation details](#Implementation-details)\
-[- Correctness discussion](#Correctness-discussion)\
-[- Benchmarks](#Benchmarks)
+[- Introduction](#Introduction): breve introduzione al problema\
+[- Parallel Solution Description](#Parallel-Solution-Description): analisi della soluzione adottata\
+[- Project structure](#Project-structure): come è organizzato il progetto\
+[- Execution instructions](#Execution-instructions): cosa fare per eseguire il programma\
+[- Implementation details](#Implementation-details): analisi dettagliata del codice\
+[- Correctness discussion](#Correctness-discussion): discussione circa la correttezza\
+[- Benchmarks](#Benchmarks): benchmarks finali
 
 ## Introduction
 
