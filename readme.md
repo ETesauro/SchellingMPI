@@ -73,7 +73,7 @@ Dalla **root** del progetto:
 2. Eseguire il programma con
 
    ```sh
-   mpirun --allow-run-as-root -np X files_out/Schelling_MPI.out
+   mpirun --allow-run-as-root --mca btl_vader_single_copy_mechanism none -np X files_out/Schelling_MPI.out
    ```
 
    dove 'X' è un numero intero.
@@ -144,8 +144,6 @@ Nel caso in cui un agente si trovi in un bordo della matrice, ovviamente i vicin
 
 ### Spostamento degli agenti
 
-<p style="color: #00aaff;"> DOING </p>
-
 Il calcolo delle celle di destinazione è stato eseguito attraverso una chiamata alla funzione MPI_Allgatherv, dove ogni processo ha condiviso con tutti gli altri sia il numero di celle vuote che lui aveva in quel momento, sia le loro posizioni.
 
 ```C
@@ -211,4 +209,4 @@ L'idea che si è seguita è la seguente, ovvero, per un processo '**i**':
 
 ## Benchmarks
 
-<p style="color: orange;"> TODO </p>
+<p style="color: #00aaff;"> DOING </p>

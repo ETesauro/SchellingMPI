@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
         printf("\n");
         print_matrix(ROWS, COLUMNS, matrix);
         calculate_total_satisfaction(rank, world_size, matrix);
-        save_to_file(ROWS, COLUMNS, "../files_out/Schelling_MPI.html", matrix);
+        //save_to_file(ROWS, COLUMNS, "../files_out/Schelling_MPI.html", matrix);
         printf("\n🕒 Time in ms = %f\n", end_time - start_time);
     }
 
@@ -680,7 +680,7 @@ void calculate_total_satisfaction(int rank, int world_size, char *matrix) {
     }
     printf("\n\n🟢 Percentuale di soddisfazione: %.3f%%\n", average);
 
-    free(not_satisfied_agents);
+    //free(not_satisfied_agents);
 }
 
 void print_matrix(int rows_size, int column_size, char *matrix) {
