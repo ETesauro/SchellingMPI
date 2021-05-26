@@ -680,7 +680,7 @@ void calculate_total_satisfaction(int rank, int world_size, char *matrix) {
     }
     printf("\n\n🟢 Percentuale di soddisfazione: %.3f%%\n", average);
 
-    //free(not_satisfied_agents);
+    free(not_satisfied_agents);
 }
 
 void print_matrix(int rows_size, int column_size, char *matrix) {
