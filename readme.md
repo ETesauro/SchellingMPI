@@ -152,9 +152,9 @@ MPI_Scatterv(global_void_cells, void_cells_per_process, displacements, datatype,
 
 Una volta che ogni processo sa quante e quali celle vuote di destinazione gli sono state assegnate, è stato possibile iniziare gli **spostamenti** degli agenti insoddisfatti.
 
-L'idea che si è seguita è stata che per un processo '**i**':
+L'idea che si è seguita è la seguente, ovvero, per un processo '**i**':
 
-- Se la riga della cella di destinazione è una riga della **mia** sottomatrice, allora posso effettuare lo spostamento senza dover effettuare comunicazione con altri processi.
+- Se la riga della cella di destinazione è una riga della **mia** sottomatrice (i == rank), allora posso effettuare lo spostamento senza dover effettuare comunicazione con altri processi.
 
   ```C
   // * Sono io -> lo sposto direttamente
@@ -166,11 +166,12 @@ L'idea che si è seguita è stata che per un processo '**i**':
     sub_matrix[i * COLUMNS + j] = EMPTY;                                           // Liberalo lo spazio nella sottomatrice
 
     want_move[destRow + destination.column_index] = 0;  // Non rendere più disponibile lo spazio disponibile per altri
-    want_move[i * COLUMNS + j] = -1;                    // Libera questo spazio precedente
+    want_move[i * COLUMNS + j] = -1;                    // Libera questo spazio
   }
   ```
 
-- Secondo caso
+- Se la riga della cella di destinazione **NON** è una riga della mia sottomatrice (i != rank), allora non posso direttamente effettuare lo spostamento.\
+  È stata creata una matrice che contiene sulle righe i processi **(0, 1, ...)** e sulle colonne la cella di destinazione dell'agente che vuole spostarsi (**{ row, col, agent }**), in modo tale da sapere, per qualsiasi processo, sia quanti elementi dovrò inviare, sia in quali posizioni dovranno essere salvati gli agenti.
 
   ```C
   // * Altrimenti impacchetto tutto
@@ -178,13 +179,20 @@ L'idea che si è seguita è stata che per un processo '**i**':
       int startRow = displacements[receiver];          // Riga iniziale del destinatario
       int destRow = destination.row_index - startRow;  // Riga di destinazione del destinatario
 
-      moveAgent var = {destRow, destination.column_index, sub_matrix[i * COLUMNS + j]};
-      data[receiver][num_elems_to_send_to[receiver]] = var;  // Setto, al processo 'receiver', la X-esima colonna con la cella di destinazione dell'agente
-      num_elems_to_send_to[receiver] += 1;                   //Aggiorno il numero di elementi che devo mandare al processo 'receiver'
+      moveAgent var = { destRow, destination.column_index, sub_matrix[i * COLUMNS + j] }; // {riga di destinazione, colonna di destinazione, agente da scrivere }
+      data[receiver][num_elems_to_send_to[receiver]] = var;                               // Setto, al processo 'receiver', la X-esima colonna con la cella di destinazione dell'agente
+      num_elems_to_send_to[receiver] += 1;                                                //Aggiorno il numero di elementi che devo mandare al processo 'receiver'
 
-      sub_matrix[i * COLUMNS + j] = EMPTY;  // Liberalo lo spazio nella sottomatrice
+      sub_matrix[i * COLUMNS + j] = EMPTY;  // Libera lo spazio nella sottomatrice
       want_move[i * COLUMNS + j] = -1;      // Libera questo spazio precedente
   }
+  ```
+
+  Dopo aver 'impacchettato' tutto, è necessaria una fase di sincronizzazione tra tutti i processi, in modo tale che ogni processo possa ricevere da tutti gli altri gli agenti da scrivere nelle proprie celle e le posizioni in cui farlo.
+
+  ```C
+  // * Sincronizzo tutti i processi
+  synchronize(rank, world_size, num_elems_to_send_to, num_assigned_void_cells, data, original_rows, sub_matrix, move_agent_type);
   ```
 
 ## Correctness discussion
