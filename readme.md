@@ -90,9 +90,9 @@ Tutti i processi calcolano quante righe della matrice dovranno ricevere. Questo 
 
 In base al numero di righe della matrice di partenza e al numero di processi con cui si esegue il programma, viene effettuata la divisione tra questi due valori e se il '**resto &gt; 0**' viene assegnata una riga in più al processo in questione.
 
-Inoltre, sono state assegnate **ulteriori 2 righe** ai processi con **'rank &gt; 0'** e **'rank &lt; world_size-1'** e solo **'una ulteriore riga'** ai processi con **'rank == 0'** e **'rank == world_size - 1'** per 'ospitare' le righe dei processi adiacenti.
+Inoltre, sono state assegnate **ulteriori 2 righe** ai processi con **'rank &gt; 0'** e **'rank &lt; world_size-1'** e solo **una ulteriore riga** ai processi con **'rank == 0'** e **'rank == world_size - 1'** per 'ospitare' le righe dei processi adiacenti.
 
-> Nota: I processi con **'rank == 0'** e **'rank == world_size - 1'** ricevono una singola riga in più perchè si è scelto di non implementare la matrice come un array circolare e, quindi, questi processi non sono vicini.
+> Nota: I processi con **'rank == 0'** e **'rank == world_size - 1'** ricevono una singola riga in più perchè si è scelto di non implementare la matrice come una struttura circolare e, quindi, questi processi non sono vicini.
 
 A questo punto, la matrice è stata suddivisa utilizzando la funzione **MPI_Scatterv()**;
 
@@ -100,7 +100,7 @@ A questo punto, la matrice è stata suddivisa utilizzando la funzione **MPI_Scat
 // Calcolo della porzione della matrice da assegnare a ciascun processo
 subdivide_matrix(world_size, displacements, sendcounts, rows_per_process);
 
-//Suddivisione delle righe tra i processi
+// Suddivisione delle righe tra i processi
 sub_matrix = malloc(rows_per_process[rank] * COLUMNS * sizeof(char *));
 MPI_Scatterv(matrix, sendcounts, displacements, MPI_CHAR, sub_matrix, rows_per_process[rank] * COLUMNS, MPI_CHAR, ROOT, MPI_COMM_WORLD);
 ```
@@ -135,6 +135,57 @@ Nel caso in cui un agente si trovi in un bordo della matrice, ovviamente i vicin
 ### Spostamento degli agenti
 
 <p style="color: #00aaff;"> DOING </p>
+
+Il calcolo delle celle di destinazione è stato eseguito attraverso una chiamata alla funzione MPI_Allgatherv, dove ogni processo ha condiviso con tutti gli altri sia il numero di celle vuote che lui aveva in quel momento, sia le loro posizioni.
+
+```C
+// Metto tutte le celle vuote della matrice insieme
+MPI_Allgatherv(local_void_cells, number_of_local_void_cells, datatype, global_void_cells, number_of_global_void_cells, displacements, datatype, MPI_COMM_WORLD);
+```
+
+A questo punto, l'array contenente le celle vuote di tutti i processi (**global_void_cells**) è stato mescolato e suddiviso equamente tra i processi. 'Equamente' significa che se un processo non avesse avuto alcun agente insoddisfatto, allora non avrebbe ricevuto una porzione di questo array perchè non avrebbe avuto bisogno.
+
+```C
+// Suddivido l'array contenente le celle di destinazione per gli spostamenti
+MPI_Scatterv(global_void_cells, void_cells_per_process, displacements, datatype, toReturn, void_cells_per_process[rank], datatype, ROOT, MPI_COMM_WORLD);
+```
+
+Una volta che ogni processo sa quante e quali celle vuote di destinazione gli sono state assegnate, è stato possibile iniziare gli **spostamenti** degli agenti insoddisfatti.
+
+L'idea che si è seguita è stata che per un processo '**i**':
+
+- Se la riga della cella di destinazione è una riga della **mia** sottomatrice, allora posso effettuare lo spostamento senza dover effettuare comunicazione con altri processi.
+
+  ```C
+  // * Sono io -> lo sposto direttamente
+  if (receiver == rank) {
+    int startRow = displacements[rank];              // Mia riga iniziale
+    int destRow = destination.row_index - startRow;  // Mia riga di destinazione
+
+    sub_matrix[destRow + destination.column_index] = sub_matrix[i * COLUMNS + j];  // Sposta l'agente
+    sub_matrix[i * COLUMNS + j] = EMPTY;                                           // Liberalo lo spazio nella sottomatrice
+
+    want_move[destRow + destination.column_index] = 0;  // Non rendere più disponibile lo spazio disponibile per altri
+    want_move[i * COLUMNS + j] = -1;                    // Libera questo spazio precedente
+  }
+  ```
+
+- Secondo caso
+
+  ```C
+  // * Altrimenti impacchetto tutto
+  else {
+      int startRow = displacements[receiver];          // Riga iniziale del destinatario
+      int destRow = destination.row_index - startRow;  // Riga di destinazione del destinatario
+
+      moveAgent var = {destRow, destination.column_index, sub_matrix[i * COLUMNS + j]};
+      data[receiver][num_elems_to_send_to[receiver]] = var;  // Setto, al processo 'receiver', la X-esima colonna con la cella di destinazione dell'agente
+      num_elems_to_send_to[receiver] += 1;                   //Aggiorno il numero di elementi che devo mandare al processo 'receiver'
+
+      sub_matrix[i * COLUMNS + j] = EMPTY;  // Liberalo lo spazio nella sottomatrice
+      want_move[i * COLUMNS + j] = -1;      // Libera questo spazio precedente
+  }
+  ```
 
 ## Correctness discussion
 

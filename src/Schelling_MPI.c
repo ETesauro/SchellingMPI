@@ -460,10 +460,10 @@ voidCell *exchange_void_cells(int rank, int world_size, int number_of_local_void
     }
 
     // * Calcolo le posizioni vuote per me e le restituisco
+    int divisione = number_of_total_void_cells / world_size;
     int resto = number_of_total_void_cells % world_size;
     int displacement = 0;
     for (int i = 0; i < world_size; i++) {
-        int divisione = number_of_total_void_cells / world_size;
         void_cells_per_process[i] = divisione > global_unsatisfied_agents[i] ? global_unsatisfied_agents[i] : divisione;
 
         if (resto > 0 && !(divisione > global_unsatisfied_agents[i])) {
@@ -514,9 +514,6 @@ void move(int rank, int world_size, int original_rows, char *sub_matrix, int *wa
             if (want_move[i * COLUMNS + j] == 1) {
                 voidCell destination = destinations[used_void_cells_assigned];                                            // Prendo la destinazione
                 int receiver = calculate_source(world_size, displacements, sendcounts, destination.row_index / COLUMNS);  // Capisco chi è il destinatario
-
-                if (destination.row_index == -1 || destination.column_index == -1)
-                    return;
 
                 // * Sono io -> lo sposto direttamente
                 if (receiver == rank) {
