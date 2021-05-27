@@ -14,8 +14,8 @@
 #define TEST 0
 
 // #region Matrice
-#define ROWS 10     // Numero di righe della matrice
-#define COLUMNS 10  // Numero di colonne della matrice
+#define ROWS 5000     // Numero di righe della matrice
+#define COLUMNS 5000  // Numero di colonne della matrice
 // #endregion
 
 // #region Agenti
@@ -74,7 +74,7 @@ void save_to_file(int, int, char *, char *);  // Funzione per salvare l'output d
 void err_finish(int *, int *, int *);         // Funzione per terminare l'esecuzione in caso di problemi
 
 //DEBUG
-void test_init_matrix(char matrix[ROWS][COLUMNS], int O_pct, int X_pct);
+void test_init_matrix(char *matrix, int O_pct, int X_pct);
 //:DEBUG
 // #endregion
 
@@ -122,12 +122,11 @@ int main(int argc, char **argv) {
     // * Inizializzazione matrice
     if (rank == ROOT) {
         matrix = malloc(ROWS * COLUMNS * sizeof(char *));
-        /* if (TEST)
+        if (TEST)
             test_init_matrix(matrix, AGENT_O_PERCENTAGE, AGENT_X_PERCENTAGE);
-        else  */
-        if (!init_matrix(matrix, AGENT_O_PERCENTAGE, AGENT_X_PERCENTAGE))
+        else if (!init_matrix(matrix, AGENT_O_PERCENTAGE, AGENT_X_PERCENTAGE))
             err_finish(sendcounts, displacements, rows_per_process);
-        print_matrix(ROWS, COLUMNS, matrix);
+        //print_matrix(ROWS, COLUMNS, matrix);
     }
 
     // * Calcolo della porzione della matrice da assegnare a ciascun processo
@@ -151,7 +150,12 @@ int main(int argc, char **argv) {
         destinations = exchange_void_cells(rank, world_size, number_of_local_void_cells, local_void_cells, &number_of_destination_cells, VOID_CELL_TYPE, unsatisfied_agents);  // Metto tutte le celle vuote insieme e restituisco l'array con le mie celle di destinazione
 
         move(rank, world_size, original_rows, sub_matrix, want_move, destinations, number_of_destination_cells, displacements, sendcounts, MOVE_AGENT_TYPE);  // Sposto gli agenti
+
         MPI_Barrier(MPI_COMM_WORLD);
+
+        free(want_move);
+        free(local_void_cells);
+        free(destinations);
     }
 
     // * Recupero la matrice finale
@@ -165,17 +169,18 @@ int main(int argc, char **argv) {
     // * Stampa matrice finale e calcolo della soddisfazione totale
     if (rank == ROOT) {
         printf("\n");
-        print_matrix(ROWS, COLUMNS, matrix);
+        //print_matrix(ROWS, COLUMNS, matrix);
         calculate_total_satisfaction(rank, world_size, matrix);
         //save_to_file(ROWS, COLUMNS, "../files_out/Schelling_MPI.html", matrix);
         printf("\n🕒 Time in ms = %f\n", end_time - start_time);
     }
 
     free(matrix);
+    free(sub_matrix);
     free(sendcounts);
     free(displacements);
     free(rows_per_process);
-    free(want_move);
+    //free(want_move);
 
     return 0;
 }
@@ -480,6 +485,9 @@ voidCell *exchange_void_cells(int rank, int world_size, int number_of_local_void
     voidCell *toReturn = malloc(sizeof(voidCell) * void_cells_per_process[rank]);
     MPI_Scatterv(global_void_cells, void_cells_per_process, displacements, datatype, toReturn, void_cells_per_process[rank], datatype, ROOT, MPI_COMM_WORLD);
 
+    free(global_void_cells);
+    free(void_cells_per_process);
+
     return toReturn;
 }
 
@@ -547,8 +555,6 @@ void move(int rank, int world_size, int original_rows, char *sub_matrix, int *wa
 
     // * Sincronizzo tutti i processi
     synchronize(rank, world_size, num_elems_to_send_to, num_assigned_void_cells, data, original_rows, sub_matrix, move_agent_type);
-
-    free(data);
 }
 
 void synchronize(int rank, int world_size, int *num_elems_to_send_to, int num_assigned_void_cells, moveAgent **data, int original_rows, char *sub_matrix, MPI_Datatype move_agent_type) {
@@ -556,6 +562,7 @@ void synchronize(int rank, int world_size, int *num_elems_to_send_to, int num_as
     MPI_Request requests1[world_size];     // Array per le prime MPI_Irecv e MPI_Wait
     MPI_Request requests2[world_size];     // Array per le seconde MPI_Irecv e MPI_Wait
     moveAgent **moved_agents;              // Matrice degli agenti che ho ricevuto che devo aggiornare nella mia sottomatrice
+    moveAgent **elements_to_send;          // Array che contiene gli elementi da mandare al processo i-esimo
 
     moved_agents = (moveAgent **)malloc(sizeof(moveAgent) * world_size);
 
@@ -567,23 +574,24 @@ void synchronize(int rank, int world_size, int *num_elems_to_send_to, int num_as
         MPI_Irecv(&my_void_cell_used_by[i], 1, MPI_INT, i, 99, MPI_COMM_WORLD, &requests1[i]);  // Ricevo dal processo i il numero di celle mie che lui ha usato
     }
 
+    elements_to_send = (moveAgent **)malloc(sizeof(moveAgent) * world_size - 1);
+
     // * Mando e ricevo al/dal processo i-esimo tutte le celle di destinazione dove devo scrivere/salvare i miei agenti
     for (int i = 0; i < world_size; i++) {
         if (i == rank) continue;
 
         int number_of_elems_to_send;  // Numero di elementi da mandare al processo i-esimo
-        moveAgent *elements_to_send;  // Array che contiene gli elementi da mandare al processo i-esimo
 
         number_of_elems_to_send = num_elems_to_send_to[i];
-        elements_to_send = malloc(number_of_elems_to_send * sizeof(moveAgent));  // Alloco lo spazio per la i-esima riga
+        elements_to_send[i] = malloc(number_of_elems_to_send * sizeof(moveAgent));  // Alloco lo spazio per la i-esima riga
 
         for (int j = 0; j < number_of_elems_to_send; j++)
-            elements_to_send[j] = data[i][j];
+            elements_to_send[i][j] = data[i][j];
 
         MPI_Wait(&requests1[i], NULL);  // Aspetto che la prima Irecv riceva il numero di elementi che gli altri processi vogliono scrivere nelle mie celle della mia sottomatrice
 
         moved_agents[i] = (moveAgent *)malloc(my_void_cell_used_by[i] * sizeof(moveAgent));
-        MPI_Isend(elements_to_send, number_of_elems_to_send, move_agent_type, i, 100, MPI_COMM_WORLD, &requests2[i]);
+        MPI_Isend(elements_to_send[i], number_of_elems_to_send, move_agent_type, i, 100, MPI_COMM_WORLD, &requests2[i]);
         MPI_Irecv(moved_agents[i], my_void_cell_used_by[i], move_agent_type, i, 100, MPI_COMM_WORLD, &requests2[i]);
     }
 
@@ -602,12 +610,18 @@ void synchronize(int rank, int world_size, int *num_elems_to_send_to, int num_as
             sub_matrix[moved_agents[i][k].destination_row + moved_agents[i][k].destination_column] = moved_agents[i][k].agent;  // Scrivo l'agente nella mia cella vuota
     }
 
-    // * Dealloco la matrice
+    // * Dealloco
     for (int i = 0; i < world_size; i++) {
-        if (i == rank) continue;
+        if (i == rank) {
+            free(data[i]);
+            continue;
+        }
         free(moved_agents[i]);
+        free(elements_to_send[i]);
     }
+    free(data);
     free(moved_agents);
+    free(elements_to_send);
 }
 
 void define_voidCellType(MPI_Datatype *VOID_CELL_TYPE) {
@@ -756,33 +770,33 @@ void err_finish(int *sendcounts, int *displacements, int *rows_per_process) {
 }
 
 // #region : *************** DEBUG ***************
-void test_init_matrix(char matrix[ROWS][COLUMNS], int O_pct, int X_pct) {
+void test_init_matrix(char *matrix, int O_pct, int X_pct) {
     int row, column, random;
 
-    *(*(matrix + 0) + 0) = AGENT_X;
-    *(*(matrix + 0) + 1) = AGENT_O;
-    *(*(matrix + 0) + 2) = AGENT_X;
-    *(*(matrix + 0) + 3) = AGENT_X;
-    *(*(matrix + 0) + 4) = AGENT_X;
-    *(*(matrix + 1) + 0) = AGENT_X;
-    *(*(matrix + 1) + 1) = AGENT_X;
-    *(*(matrix + 1) + 2) = AGENT_X;
-    *(*(matrix + 1) + 3) = AGENT_O;
-    *(*(matrix + 1) + 4) = AGENT_O;
-    *(*(matrix + 2) + 0) = AGENT_X;
-    *(*(matrix + 2) + 1) = AGENT_O;
-    *(*(matrix + 2) + 2) = EMPTY;
-    *(*(matrix + 2) + 3) = AGENT_O;
-    *(*(matrix + 2) + 4) = AGENT_O;
-    *(*(matrix + 3) + 0) = AGENT_O;
-    *(*(matrix + 3) + 1) = EMPTY;
-    *(*(matrix + 3) + 2) = EMPTY;
-    *(*(matrix + 3) + 3) = AGENT_O;
-    *(*(matrix + 3) + 4) = AGENT_O;
-    *(*(matrix + 4) + 0) = EMPTY;
-    *(*(matrix + 4) + 1) = AGENT_O;
-    *(*(matrix + 4) + 2) = AGENT_O;
-    *(*(matrix + 4) + 3) = AGENT_X;
-    *(*(matrix + 4) + 4) = AGENT_O;
+    matrix[0 * COLUMNS + 0] = AGENT_X;
+    matrix[0 * COLUMNS + 1] = AGENT_O;
+    matrix[0 * COLUMNS + 2] = AGENT_X;
+    matrix[0 * COLUMNS + 3] = AGENT_X;
+    matrix[0 * COLUMNS + 4] = AGENT_X;
+    matrix[1 * COLUMNS + 0] = AGENT_X;
+    matrix[1 * COLUMNS + 1] = AGENT_X;
+    matrix[1 * COLUMNS + 2] = AGENT_X;
+    matrix[1 * COLUMNS + 3] = AGENT_O;
+    matrix[1 * COLUMNS + 4] = AGENT_O;
+    matrix[2 * COLUMNS + 0] = AGENT_X;
+    matrix[2 * COLUMNS + 1] = AGENT_O;
+    matrix[2 * COLUMNS + 2] = EMPTY;
+    matrix[2 * COLUMNS + 3] = AGENT_O;
+    matrix[2 * COLUMNS + 4] = AGENT_O;
+    matrix[3 * COLUMNS + 0] = AGENT_O;
+    matrix[3 * COLUMNS + 1] = EMPTY;
+    matrix[3 * COLUMNS + 2] = EMPTY;
+    matrix[3 * COLUMNS + 3] = AGENT_O;
+    matrix[3 * COLUMNS + 4] = AGENT_O;
+    matrix[4 * COLUMNS + 0] = EMPTY;
+    matrix[4 * COLUMNS + 1] = AGENT_O;
+    matrix[4 * COLUMNS + 2] = AGENT_O;
+    matrix[4 * COLUMNS + 3] = AGENT_X;
+    matrix[4 * COLUMNS + 4] = AGENT_O;
 }
 // #endregion: *************** DEBUG ***************
