@@ -253,20 +253,20 @@ La **speedup** viene calcolata come **_S(p,n)_**=**_T(1,n)_**/**_T(p,n)_**.
 | :----------------------------------------------------------: |
 | ![weak_speedup](./doc/img/weak_scalability/speedup_weak.png) |
 
-I risultati mostrano come la speedup aumenta quando il calcolo parallelo viene effettuato sulla stessa macchina ma diminuisce quando si passa su molteplici macchine. Questa caratteristica è dovuta al fatto che la comunicazione tra i vari processi situati su macchine diverse è molto dispendiosa in termini di tempo mentre quella che avviene all'interno della stessa macchina è molto più veloce. Per come è stata implementata la soluzione e per come si può osservare dai grafici precedenti, l'algoritmo lavora molto bene in locale con 8 processi (pari al numero massimo di vCPUs per una singola istanza t2.2xlarge).
+I risultati mostrano che il trend è più o meno sempre lo stesso, overro che la speedup aumenta quando il calcolo parallelo viene effettuato sulla stessa macchina ma diminuisce quando si passa su molteplici macchine. Questa caratteristica è dovuta al fatto che la comunicazione tra i vari processi situati su macchine diverse è molto dispendiosa in termini di tempo mentre quella che avviene all'interno della stessa macchina è molto più veloce. Per come è stata implementata la soluzione e per come si può osservare dai grafici precedenti, l'algoritmo lavora molto bene in locale con 8 processi (pari al numero massimo di vCPUs per una singola istanza t2.2xlarge).
 
-Il trend è più o meno sempre lo stesso, ovvero che la speedup aumenta finchè si utilizzano al massimo tutti i core della stessa macchina, mentre diminuisce quando si passa al calcolo distribuito.
+Inoltre, questo accade anche perchè ad ogni iterazione dell'algoritmo c'è bisogno di una fase di sincronizzazione in cui ogni processo invia tutto ciò che serve a tutti gli altri processi. Ovviamente, per quanto detto pocanzi, questa fase è molto dispendiosa.
 
 ### Scalabilità forte
 
-<!-- |                           100x100                           |                            1000x1000                            |
+|                           100x100                           |                            1000x1000                            |
 | :---------------------------------------------------------: | :-------------------------------------------------------------: |
 | ![100x100](./doc/img/strong_scalability/strong_100x100.png) | ![1000x1000](./doc/img/strong_scalability/strong_1000x1000.png) |
 
 |                            2500x2500                            |                            5000x5000                            |
 | :-------------------------------------------------------------: | :-------------------------------------------------------------: |
-| ![2500x2500](./doc/img/strong_scalability/strong_2500x2500.png) | ![5000x5000](./doc/img/strong_scalability/strong_5000x5000.png) | -->
+| ![2500x2500](./doc/img/strong_scalability/strong_2500x2500.png) | ![5000x5000](./doc/img/strong_scalability/strong_5000x5000.png) |
 
 ### Scalabilità debole
 
-<!-- ![weak](./doc/img/weak_scalability/weak.png) -->
+![weak](./doc/img/weak_scalability/weak.png)
