@@ -209,11 +209,19 @@ L'idea che si è seguita è la seguente, ovvero, per un processo '**i**':
 
 La correttezza per questo tipo di problema deve essere dimostrata, per ogni test, a partire dalla stessa matrice iniziale. È stato necessario, quindi, crearne una ad hoc per questa dimostrazione in quanto, normalmente, le matrici vengono inizializzate in maniera casuale.\
 Si procederà utilizzando una **matrice 10x10** e si dimostrerà che, a parità di input, l'esecuzione con lo stesso numero di processi produrrà sempre la stessa matrice finale.\
-Inoltre, utilizzando una **matrice 100x100** per una maggior evidenza, si dimostrerà che si verranno a formare gruppi **ben definiti** di agenti.
+Inoltre, utilizzando una **matrice 50x80** per una maggior evidenza, si dimostrerà che si verranno a formare gruppi **ben definiti** di agenti.
 
 ### Stessi risultati
 
 Breve descrizione
+
+|        Prima esecuzione con 2 processi        |       Seconda esecuzione con 2 processi       |
+| :-------------------------------------------: | :-------------------------------------------: |
+| ![same2_1](./doc/img/correctness/same2_1.png) | ![same2_2](./doc/img/correctness/same2_2.png) |
+
+|        Prima esecuzione con 3 processi        |       Seconda esecuzione con 3 processi       |
+| :-------------------------------------------: | :-------------------------------------------: |
+| ![same3_1](./doc/img/correctness/same3_1.png) | ![same3_2](./doc/img/correctness/same3_2.png) |
 
 ### Gruppi ben definiti
 
