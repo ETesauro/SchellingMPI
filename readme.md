@@ -205,31 +205,29 @@ L'idea che si è seguita è la seguente, ovvero, per un processo '**i**':
 
 ## Correctness discussion
 
-<p style="color: orange;"> TODO </p>
+<p style="color: #00aaff;"> DOING </p>
 
 La correttezza per questo tipo di problema deve essere dimostrata, per ogni test, a partire dalla stessa matrice iniziale. È stato necessario, quindi, crearne una ad hoc per questa dimostrazione in quanto, normalmente, le matrici vengono inizializzate in maniera casuale.\
-Si procederà utilizzando una **matrice 10x10** e si dimostrerà che, a parità di input, l'esecuzione con lo stesso numero di processi produrrà sempre la stessa matrice finale.\
-Inoltre, utilizzando una **matrice 50x80** per una maggior evidenza, si dimostrerà che si verranno a formare gruppi **ben definiti** di agenti.
+Si procederà utilizzando una **matrice 10x10** e si dimostrerà che, a parità di input, l'esecuzione con lo stesso numero di processi produrrà sempre la [stessa matrice finale](#Stessi-risultati).\
+Inoltre, utilizzando una **matrice 50x80** per una maggior evidenza, si dimostrerà che si verranno a formare gruppi [ben definiti](#Gruppi-ben-definiti) di agenti.
 
 ### Stessi risultati
 
-Breve descrizione
-
-|        Prima esecuzione con 2 processi        |       Seconda esecuzione con 2 processi       |
-| :-------------------------------------------: | :-------------------------------------------: |
-| ![same2_1](./doc/img/correctness/same2_1.png) | ![same2_2](./doc/img/correctness/same2_2.png) |
-
-|        Prima esecuzione con 3 processi        |       Seconda esecuzione con 3 processi       |
-| :-------------------------------------------: | :-------------------------------------------: |
-| ![same3_1](./doc/img/correctness/same3_1.png) | ![same3_2](./doc/img/correctness/same3_2.png) |
+|        Prima esecuzione con 2 processi        |       Seconda esecuzione con 2 processi       |        Prima esecuzione con 3 processi        |       Seconda esecuzione con 3 processi       |
+| :-------------------------------------------: | :-------------------------------------------: | :-------------------------------------------: | :-------------------------------------------: |
+| ![same2_1](./doc/img/correctness/same2_1.png) | ![same2_2](./doc/img/correctness/same2_2.png) | ![same3_1](./doc/img/correctness/same3_1.png) | ![same3_2](./doc/img/correctness/same3_2.png) |
 
 ### Gruppi ben definiti
 
 Breve descrizione
 
+|                Matrice iniziale                |                Matrice finale                |
+| :--------------------------------------------: | :------------------------------------------: |
+| ![same2_1](./doc/img/correctness/iniziale.png) | ![same2_2](./doc/img/correctness/finale.png) |
+
 ## Benchmarks
 
-<p style="color: #00aaff;"> DOING </p>
+<p style="color: orange;"> TODO </p>
 
 I test sono stati effettuati su un cluster AWS composto da 4 istanze [t2.2xlarge](https://aws.amazon.com/it/ec2/instance-types/).\
 Per valutare l'efficienza dell'esecuzione parallela per questo tipo di problema, prenderemo in considerazione tre metriche: la [speedup](#Speedup), la [scalabilità forte](#Scalabilità-forte) e la [scalabilità debole](#Scalabilità-debole).
