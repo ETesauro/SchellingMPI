@@ -56,9 +56,9 @@ La soluzione sviluppata segue 8 passi ben definiti.
   - _**Schelling_MPI.c**_: file contenente il codice sorgente del programma
 - files_out/
   - _**Schelling_MPI.out**_: file eseguibile del programma
-  - _**Schelling_MPI.html**_: file generato al termine dell'esecuzione del programma che contiene la matrice finale
 - doc/
-  - _**mdb.min.css**_: CSS utilizzato per la pagina HTML generata
+  - _**benchmarks**_.md: file di report di tutti i test effettuati
+  - _**img**_/: cartella contente le immagini per la documentazione
 
 ## Execution instructions
 
@@ -205,13 +205,28 @@ L'idea che si è seguita è la seguente, ovvero, per un processo '**i**':
 
 ## Correctness discussion
 
-<p style="color: #00aaff;"> DOING </p>
-
 La correttezza per questo tipo di problema deve essere dimostrata, per ogni test, a partire dalla stessa matrice iniziale. È stato necessario, quindi, crearne una ad hoc per questa dimostrazione in quanto, normalmente, le matrici vengono inizializzate in maniera casuale.\
 Si procederà utilizzando una **matrice 10x10** e si dimostrerà che, a parità di input, l'esecuzione con lo stesso numero di processi produrrà sempre la [stessa matrice finale](#Stessi-risultati).\
 Inoltre, utilizzando una **matrice 50x80** per una maggior evidenza, si dimostrerà che si verranno a formare gruppi [ben definiti](#Gruppi-ben-definiti) di agenti.
 
 ### Stessi risultati
+
+La caratteristiche che porta ad avere sempre la stessa matrice **finale** a partire sempre dalla stessa matrice **iniziale** è possibile ottenerla grazie ad una divisione ben definita sia del carico di lavoro, sia ad una suddivisione delle celle libere dove spostare gli agenti.
+
+In particolare, la strada che si è scelto di seguire è stata quella di suddividere la matrice tra i processi in base al numero di righe della matrice stessa e di distribuire le celle libere dove spostare gli agenti prima calcolandole e, poi, facendo 'mescolare' **ad ogni processo** l'array contenente tutte queste celle utilizzando un seme definito come costante.
+
+```C
+#define SEED 15
+...
+// Mischio l'array (uso lo STESSO seme per ogni processo in modo da avere lo shuffle uguale)
+srand(SEED);
+for (int i = 0; i < number_of_total_void_cells; i++) {
+    int destination = RAND(0, number_of_total_void_cells);
+    voidCell tmp = global_void_cells[destination];
+    global_void_cells[destination] = global_void_cells[i];
+    global_void_cells[i] = tmp;
+}
+```
 
 |        Prima esecuzione con 2 processi        |       Seconda esecuzione con 2 processi       |        Prima esecuzione con 3 processi        |       Seconda esecuzione con 3 processi       |
 | :-------------------------------------------: | :-------------------------------------------: | :-------------------------------------------: | :-------------------------------------------: |
@@ -219,7 +234,9 @@ Inoltre, utilizzando una **matrice 50x80** per una maggior evidenza, si dimostre
 
 ### Gruppi ben definiti
 
-Breve descrizione
+L'obiettivo di questo problema è quello di implementare il modello di segregazione di Schelling e, quindi, quello di mostrare come pian piano si vengono a formare gruppi di 'agenti' simili.
+
+Per fare ciò, di seguito vengono riportate due immagini che mostrano la matrice iniziale e quella finale dopo aver eseguito **100** iterazioni.
 
 |                Matrice iniziale                |                Matrice finale                |
 | :--------------------------------------------: | :------------------------------------------: |
@@ -227,7 +244,7 @@ Breve descrizione
 
 ## Benchmarks
 
-<p style="color: orange;"> TODO </p>
+<p style="color: #00aaff;"> DOING </p>
 
 I test sono stati effettuati su un cluster AWS composto da 4 istanze [t2.2xlarge](https://aws.amazon.com/it/ec2/instance-types/).\
 Per valutare l'efficienza dell'esecuzione parallela per questo tipo di problema, prenderemo in considerazione tre metriche: la [speedup](#Speedup), la [scalabilità forte](#Scalabilità-forte) e la [scalabilità debole](#Scalabilità-debole).
@@ -264,6 +281,8 @@ I risultati mostrano che il trend è più o meno sempre lo stesso, ovvero che la
 Inoltre, questo accade anche perchè ad ogni iterazione dell'algoritmo c'è bisogno di una fase di sincronizzazione in cui ogni processo invia tutto ciò che serve a tutti gli altri processi. Ovviamente, per quanto detto pocanzi, questa fase è molto dispendiosa.
 
 ### Scalabilità forte
+
+<p style="color: orange;"> TODO </p>
 
 |                           100x100                           |                            1000x1000                            |
 | :---------------------------------------------------------: | :-------------------------------------------------------------: |
