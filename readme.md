@@ -207,6 +207,66 @@ L'idea che si è seguita è la seguente, ovvero, per un processo '**i**':
 
 <p style="color: orange;"> TODO </p>
 
+La correttezza per questo tipo di problema deve essere dimostrata, per ogni test, a partire dalla stessa matrice iniziale. È stato necessario, quindi, crearne una ad hoc per questa dimostrazione in quanto, normalmente, le matrici vengono inizializzate in maniera casuale.\
+Si procederà utilizzando una **matrice 10x10** e si dimostrerà che, a parità di input, l'esecuzione con lo stesso numero di processi produrrà sempre la stessa matrice finale.\
+Inoltre, utilizzando una **matrice 100x100** per una maggior evidenza, si dimostrerà che si verranno a formare gruppi **ben definiti** di agenti.
+
+### Stessi risultati
+
+Breve descrizione
+
+### Gruppi ben definiti
+
+Breve descrizione
+
 ## Benchmarks
 
 <p style="color: #00aaff;"> DOING </p>
+
+I test sono stati effettuati su un cluster AWS composto da 4 istanze [t2.2xlarge](https://aws.amazon.com/it/ec2/instance-types/).\
+Per valutare l'efficienza dell'esecuzione parallela per questo tipo di problema, prenderemo in considerazione tre metriche: la [speedup](#Speedup), la [scalabilità forte](#Scalabilità-forte) e la [scalabilità debole](#Scalabilità-debole).
+
+### Speedup
+
+La speedup è una misura il vantaggio nel risolvere un determinato problema utilizzando la computazione parallela. Il valore è definito come il rapporto tra il tempo impiegato per risolvere il problema su un singolo elemento di computazione e il tempo impiegato per risolverlo su un computer o un sistema informatico in modo parallelo con **p** elementi di elaborazione identici.
+
+Dato un input **_I_** di dimensione **_n_**, il tempo della soluzione sequenziale su input **_I_** è indicato come **_T(1,n)_** e il tempo della soluzione parallela su input **_I_** è indicato come **_T(p,n)_**.\
+La **speedup** viene calcolata come **_S(p,n)_**=**_T(1,n)_**/**_T(p,n)_**.
+
+|                           100x100                            |                                100x100 (zoom)                                |
+| :----------------------------------------------------------: | :--------------------------------------------------------------------------: |
+| ![100x100](./doc/img/strong_scalability/speedup_100x100.png) | ![100x100 zoom](./doc/img/strong_scalability/speedup_zoom_strong100x100.png) |
+
+|                            1000x1000                             |                                 1000x1000 (zoom)                                 |
+| :--------------------------------------------------------------: | :------------------------------------------------------------------------------: |
+| ![1000x1000](./doc/img/strong_scalability/speedup_1000x1000.png) | ![1000x1000 zoom](./doc/img/strong_scalability/speedup_zoom_strong1000x1000.png) |
+
+|                            2500x2500                             |                                 2500x2500 (zoom)                                 |
+| :--------------------------------------------------------------: | :------------------------------------------------------------------------------: |
+| ![2500x2500](./doc/img/strong_scalability/speedup_2500x2500.png) | ![2500x2500 zoom](./doc/img/strong_scalability/speedup_zoom_strong2500x2500.png) |
+
+|                            5000x5000                             |                                 5000x5000 (zoom)                                 |
+| :--------------------------------------------------------------: | :------------------------------------------------------------------------------: |
+| ![5000x5000](./doc/img/strong_scalability/speedup_5000x5000.png) | ![5000x5000 zoom](./doc/img/strong_scalability/speedup_zoom_strong5000x5000.png) |
+
+|                         Weak Speedup                         |
+| :----------------------------------------------------------: |
+| ![weak_speedup](./doc/img/weak_scalability/speedup_weak.png) |
+
+I risultati mostrano come la speedup aumenta quando il calcolo parallelo viene effettuato sulla stessa macchina ma diminuisce quando si passa su molteplici macchine. Questa caratteristica è dovuta al fatto che la comunicazione tra i vari processi situati su macchine diverse è molto dispendiosa in termini di tempo mentre quella che avviene all'interno della stessa macchina è molto più veloce. Per come è stata implementata la soluzione e per come si può osservare dai grafici precedenti, l'algoritmo lavora molto bene in locale con 8 processi (pari al numero massimo di vCPUs per una singola istanza t2.2xlarge).
+
+Il trend è più o meno sempre lo stesso, ovvero che la speedup aumenta finchè si utilizzano al massimo tutti i core della stessa macchina, mentre diminuisce quando si passa al calcolo distribuito.
+
+### Scalabilità forte
+
+<!-- |                           100x100                           |                            1000x1000                            |
+| :---------------------------------------------------------: | :-------------------------------------------------------------: |
+| ![100x100](./doc/img/strong_scalability/strong_100x100.png) | ![1000x1000](./doc/img/strong_scalability/strong_1000x1000.png) |
+
+|                            2500x2500                            |                            5000x5000                            |
+| :-------------------------------------------------------------: | :-------------------------------------------------------------: |
+| ![2500x2500](./doc/img/strong_scalability/strong_2500x2500.png) | ![5000x5000](./doc/img/strong_scalability/strong_5000x5000.png) | -->
+
+### Scalabilità debole
+
+<!-- ![weak](./doc/img/weak_scalability/weak.png) -->

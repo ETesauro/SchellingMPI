@@ -11,11 +11,11 @@
 
 #include "mpi.h"
 
-#define TEST 0
+#define TEST 1
 
 // #region Matrice
-#define ROWS 5000     // Numero di righe della matrice
-#define COLUMNS 5000  // Numero di colonne della matrice
+#define ROWS 10     // Numero di righe della matrice
+#define COLUMNS 10  // Numero di colonne della matrice
 // #endregion
 
 // #region Agenti
@@ -69,9 +69,8 @@ void calculate_total_satisfaction(int, int, char *);                            
 void define_voidCellType(MPI_Datatype *);   // Funzione per definire il tipo voidCell
 void define_moveAgentType(MPI_Datatype *);  // Funzione per definire il tipo moveAgent
 
-void print_matrix(int, int, char *);          // Funzione per stampare la matrice
-void save_to_file(int, int, char *, char *);  // Funzione per salvare l'output dell'ordinamento
-void err_finish(int *, int *, int *);         // Funzione per terminare l'esecuzione in caso di problemi
+void print_matrix(int, int, char *);   // Funzione per stampare la matrice
+void err_finish(int *, int *, int *);  // Funzione per terminare l'esecuzione in caso di problemi
 
 //DEBUG
 void test_init_matrix(char *matrix, int O_pct, int X_pct);
@@ -169,9 +168,8 @@ int main(int argc, char **argv) {
     // * Stampa matrice finale e calcolo della soddisfazione totale
     if (rank == ROOT) {
         printf("\n");
-        //print_matrix(ROWS, COLUMNS, matrix);
+        print_matrix(ROWS, COLUMNS, matrix);
         calculate_total_satisfaction(rank, world_size, matrix);
-        //save_to_file(ROWS, COLUMNS, "../files_out/Schelling_MPI.html", matrix);
         printf("\n🕒 Time in ms = %f\n", end_time - start_time);
     }
 
@@ -180,7 +178,6 @@ int main(int argc, char **argv) {
     free(sendcounts);
     free(displacements);
     free(rows_per_process);
-    //free(want_move);
 
     return 0;
 }
@@ -564,7 +561,8 @@ void synchronize(int rank, int world_size, int *num_elems_to_send_to, int num_as
     moveAgent **moved_agents;              // Matrice degli agenti che ho ricevuto che devo aggiornare nella mia sottomatrice
     moveAgent **elements_to_send;          // Array che contiene gli elementi da mandare al processo i-esimo
 
-    moved_agents = (moveAgent **)malloc(sizeof(moveAgent) * world_size);
+    moved_agents = (moveAgent **)malloc(sizeof(moveAgent *) * world_size - 1);
+    elements_to_send = (moveAgent **)malloc(sizeof(moveAgent *) * world_size - 1);
 
     // * Dico ai num_elems_to_send_to quante celle loro ho usato
     for (int i = 0; i < world_size; i++) {
@@ -574,16 +572,14 @@ void synchronize(int rank, int world_size, int *num_elems_to_send_to, int num_as
         MPI_Irecv(&my_void_cell_used_by[i], 1, MPI_INT, i, 99, MPI_COMM_WORLD, &requests1[i]);  // Ricevo dal processo i il numero di celle mie che lui ha usato
     }
 
-    elements_to_send = (moveAgent **)malloc(sizeof(moveAgent) * world_size - 1);
-
     // * Mando e ricevo al/dal processo i-esimo tutte le celle di destinazione dove devo scrivere/salvare i miei agenti
     for (int i = 0; i < world_size; i++) {
         if (i == rank) continue;
 
         int number_of_elems_to_send;  // Numero di elementi da mandare al processo i-esimo
-
         number_of_elems_to_send = num_elems_to_send_to[i];
-        elements_to_send[i] = malloc(number_of_elems_to_send * sizeof(moveAgent));  // Alloco lo spazio per la i-esima riga
+
+        elements_to_send[i] = (moveAgent *)malloc(number_of_elems_to_send * sizeof(moveAgent));  // Alloco lo spazio per la i-esima riga
 
         for (int j = 0; j < number_of_elems_to_send; j++)
             elements_to_send[i][j] = data[i][j];
@@ -612,12 +608,10 @@ void synchronize(int rank, int world_size, int *num_elems_to_send_to, int num_as
 
     // * Dealloco
     for (int i = 0; i < world_size; i++) {
-        if (i == rank) {
-            free(data[i]);
-            continue;
-        }
+        free(data[i]);
+        if (i == rank) continue;
+
         free(moved_agents[i]);
-        free(elements_to_send[i]);
     }
     free(data);
     free(moved_agents);
@@ -720,47 +714,6 @@ void print_matrix(int rows_size, int column_size, char *matrix) {
     }
 }
 
-void save_to_file(int rows_size, int column_size, char *file_name, char *matrix) {
-    FILE *doc = fopen(file_name, "w");
-    int i, j;
-
-    fprintf(doc, "<!DOCTYPE html>\n");
-    fprintf(doc, "<html>\n");
-    fprintf(doc, "<head>\n");
-    fprintf(doc, "<meta charset='UTF-8'/>\n");
-    fprintf(doc, "<meta name='viewport' content='width=device-width, initial-scale=1.0'/>\n");
-    fprintf(doc, "<link href='../doc/mdb.min.css' rel='stylesheet'>\n");
-    fprintf(doc, "<title>Schelling_MPI</title>\n");
-    fprintf(doc, "<style>body {background-color: #1e2428}</style>\n");
-
-    fprintf(doc, "</head>\n\n");
-
-    fprintf(doc, "<body>");
-
-    fprintf(doc, "<table id='dtVerticalScrollExample' class='table table-sm table-borderless' cellspacing='0' width='100%%'");
-
-    for (i = 0; i < rows_size; i++) {
-        fprintf(doc, "<tr>");
-        for (j = 0; j < column_size; j++) {
-            if (matrix[i * COLUMNS + j] == AGENT_O)
-                fprintf(doc, "<td class='p-1' style='color:#ff4444'>%c</td>", matrix[i * COLUMNS + j]);
-            else if (matrix[i * COLUMNS + j] == AGENT_X)
-                fprintf(doc, "<td class='p-1' style='color:#0099CC'>%c</td>", matrix[i * COLUMNS + j]);
-            else
-                fprintf(doc, "<td class='p-1'>%c</td>", matrix[i * COLUMNS + j]);
-        }
-        fprintf(doc, "\n");
-        fprintf(doc, "</tr>");
-    }
-    fprintf(doc, "</table>");
-    fprintf(doc, "<script>\n");
-    fprintf(doc, "$(document).ready(function () { $('#dtVerticalScrollExample').DataTable({ 'scrollY': '200px', 'scrollCollapse': true,}); $('.dataTables_length').addClass('bs-select'); });\n");
-    fprintf(doc, "</script>\n");
-    fprintf(doc, "</body>\n");
-    fprintf(doc, "</html>");
-    fclose(doc);
-}
-
 void err_finish(int *sendcounts, int *displacements, int *rows_per_process) {
     free(sendcounts);
     free(displacements);
@@ -778,25 +731,100 @@ void test_init_matrix(char *matrix, int O_pct, int X_pct) {
     matrix[0 * COLUMNS + 2] = AGENT_X;
     matrix[0 * COLUMNS + 3] = AGENT_X;
     matrix[0 * COLUMNS + 4] = AGENT_X;
+    matrix[0 * COLUMNS + 5] = AGENT_O;
+    matrix[0 * COLUMNS + 6] = AGENT_O;
+    matrix[0 * COLUMNS + 7] = EMPTY;
+    matrix[0 * COLUMNS + 8] = AGENT_O;
+    matrix[0 * COLUMNS + 9] = AGENT_X;
     matrix[1 * COLUMNS + 0] = AGENT_X;
     matrix[1 * COLUMNS + 1] = AGENT_X;
     matrix[1 * COLUMNS + 2] = AGENT_X;
     matrix[1 * COLUMNS + 3] = AGENT_O;
     matrix[1 * COLUMNS + 4] = AGENT_O;
+    matrix[1 * COLUMNS + 5] = EMPTY;
+    matrix[1 * COLUMNS + 6] = EMPTY;
+    matrix[1 * COLUMNS + 7] = AGENT_X;
+    matrix[1 * COLUMNS + 8] = AGENT_X;
+    matrix[1 * COLUMNS + 9] = EMPTY;
     matrix[2 * COLUMNS + 0] = AGENT_X;
     matrix[2 * COLUMNS + 1] = AGENT_O;
     matrix[2 * COLUMNS + 2] = EMPTY;
     matrix[2 * COLUMNS + 3] = AGENT_O;
     matrix[2 * COLUMNS + 4] = AGENT_O;
+    matrix[2 * COLUMNS + 5] = AGENT_X;
+    matrix[2 * COLUMNS + 6] = AGENT_O;
+    matrix[2 * COLUMNS + 7] = AGENT_X;
+    matrix[2 * COLUMNS + 8] = AGENT_O;
+    matrix[2 * COLUMNS + 9] = AGENT_X;
     matrix[3 * COLUMNS + 0] = AGENT_O;
     matrix[3 * COLUMNS + 1] = EMPTY;
     matrix[3 * COLUMNS + 2] = EMPTY;
     matrix[3 * COLUMNS + 3] = AGENT_O;
     matrix[3 * COLUMNS + 4] = AGENT_O;
+    matrix[3 * COLUMNS + 5] = EMPTY;
+    matrix[3 * COLUMNS + 6] = AGENT_X;
+    matrix[3 * COLUMNS + 7] = EMPTY;
+    matrix[3 * COLUMNS + 8] = AGENT_O;
+    matrix[3 * COLUMNS + 9] = EMPTY;
     matrix[4 * COLUMNS + 0] = EMPTY;
     matrix[4 * COLUMNS + 1] = AGENT_O;
     matrix[4 * COLUMNS + 2] = AGENT_O;
     matrix[4 * COLUMNS + 3] = AGENT_X;
     matrix[4 * COLUMNS + 4] = AGENT_O;
+    matrix[4 * COLUMNS + 5] = AGENT_X;
+    matrix[4 * COLUMNS + 6] = EMPTY;
+    matrix[4 * COLUMNS + 7] = AGENT_X;
+    matrix[4 * COLUMNS + 8] = AGENT_O;
+    matrix[4 * COLUMNS + 9] = EMPTY;
+    matrix[5 * COLUMNS + 0] = AGENT_X;
+    matrix[5 * COLUMNS + 1] = AGENT_O;
+    matrix[5 * COLUMNS + 2] = AGENT_X;
+    matrix[5 * COLUMNS + 3] = AGENT_X;
+    matrix[5 * COLUMNS + 4] = AGENT_X;
+    matrix[5 * COLUMNS + 5] = AGENT_O;
+    matrix[5 * COLUMNS + 6] = EMPTY;
+    matrix[5 * COLUMNS + 7] = AGENT_X;
+    matrix[5 * COLUMNS + 8] = AGENT_O;
+    matrix[5 * COLUMNS + 9] = EMPTY;
+    matrix[6 * COLUMNS + 0] = AGENT_X;
+    matrix[6 * COLUMNS + 1] = AGENT_X;
+    matrix[6 * COLUMNS + 2] = AGENT_X;
+    matrix[6 * COLUMNS + 3] = AGENT_O;
+    matrix[6 * COLUMNS + 4] = AGENT_O;
+    matrix[6 * COLUMNS + 5] = AGENT_X;
+    matrix[6 * COLUMNS + 6] = AGENT_X;
+    matrix[6 * COLUMNS + 7] = EMPTY;
+    matrix[6 * COLUMNS + 8] = AGENT_O;
+    matrix[6 * COLUMNS + 9] = EMPTY;
+    matrix[7 * COLUMNS + 0] = AGENT_X;
+    matrix[7 * COLUMNS + 1] = AGENT_O;
+    matrix[7 * COLUMNS + 2] = EMPTY;
+    matrix[7 * COLUMNS + 3] = AGENT_O;
+    matrix[7 * COLUMNS + 4] = AGENT_O;
+    matrix[7 * COLUMNS + 5] = AGENT_O;
+    matrix[7 * COLUMNS + 6] = AGENT_X;
+    matrix[7 * COLUMNS + 7] = AGENT_O;
+    matrix[7 * COLUMNS + 8] = EMPTY;
+    matrix[7 * COLUMNS + 9] = AGENT_X;
+    matrix[8 * COLUMNS + 0] = AGENT_O;
+    matrix[8 * COLUMNS + 1] = EMPTY;
+    matrix[8 * COLUMNS + 2] = EMPTY;
+    matrix[8 * COLUMNS + 3] = AGENT_O;
+    matrix[8 * COLUMNS + 4] = AGENT_O;
+    matrix[8 * COLUMNS + 5] = EMPTY;
+    matrix[8 * COLUMNS + 6] = AGENT_X;
+    matrix[8 * COLUMNS + 7] = AGENT_O;
+    matrix[8 * COLUMNS + 8] = AGENT_X;
+    matrix[8 * COLUMNS + 9] = EMPTY;
+    matrix[9 * COLUMNS + 0] = EMPTY;
+    matrix[9 * COLUMNS + 1] = AGENT_O;
+    matrix[9 * COLUMNS + 2] = AGENT_O;
+    matrix[9 * COLUMNS + 3] = AGENT_X;
+    matrix[9 * COLUMNS + 4] = AGENT_O;
+    matrix[9 * COLUMNS + 5] = AGENT_X;
+    matrix[9 * COLUMNS + 6] = AGENT_X;
+    matrix[9 * COLUMNS + 7] = AGENT_O;
+    matrix[9 * COLUMNS + 8] = AGENT_O;
+    matrix[9 * COLUMNS + 9] = AGENT_X;
 }
 // #endregion: *************** DEBUG ***************
