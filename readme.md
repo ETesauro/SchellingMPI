@@ -244,8 +244,6 @@ Per fare ciò, di seguito vengono riportate due immagini che mostrano la matrice
 
 ## Benchmarks
 
-<p style="color: #00aaff;"> DOING </p>
-
 I test sono stati effettuati su un cluster AWS composto da 4 istanze [t2.2xlarge](https://aws.amazon.com/it/ec2/instance-types/).\
 Per valutare l'efficienza dell'esecuzione parallela per questo tipo di problema, prenderemo in considerazione tre metriche: la [speedup](#Speedup), la [scalabilità forte](#Scalabilità-forte) e la [scalabilità debole](#Scalabilità-debole).
 
@@ -281,8 +279,6 @@ I risultati mostrano che il trend è più o meno sempre lo stesso, ovvero che la
 Inoltre, questo accade anche perchè ad ogni iterazione dell'algoritmo c'è bisogno di una fase di sincronizzazione in cui ogni processo invia tutto ciò che serve a tutti gli altri processi. Ovviamente, per quanto detto pocanzi, questa fase è molto dispendiosa.
 
 ### Scalabilità forte
-
-<p style="color: orange;"> TODO </p>
 
 |                           100x100                           |                            1000x1000                            |
 | :---------------------------------------------------------: | :-------------------------------------------------------------: |
