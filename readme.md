@@ -228,7 +228,7 @@ Per valutare l'efficienza dell'esecuzione parallela per questo tipo di problema,
 
 ### Speedup
 
-La speedup è una misura il vantaggio nel risolvere un determinato problema utilizzando la computazione parallela. Il valore è definito come il rapporto tra il tempo impiegato per risolvere il problema su un singolo elemento di computazione e il tempo impiegato per risolverlo su un computer o un sistema informatico in modo parallelo con **p** elementi di elaborazione identici.
+La speedup è una misura che indica il vantaggio nel risolvere un determinato problema utilizzando la computazione parallela. Il valore è definito come il rapporto tra il tempo impiegato per risolvere il problema su un singolo elemento di computazione e il tempo impiegato per risolverlo su un computer o un sistema informatico in modo parallelo con **p** elementi di elaborazione identici.
 
 Dato un input **_I_** di dimensione **_n_**, il tempo della soluzione sequenziale su input **_I_** è indicato come **_T(1,n)_** e il tempo della soluzione parallela su input **_I_** è indicato come **_T(p,n)_**.\
 La **speedup** viene calcolata come **_S(p,n)_**=**_T(1,n)_**/**_T(p,n)_**.
@@ -253,7 +253,7 @@ La **speedup** viene calcolata come **_S(p,n)_**=**_T(1,n)_**/**_T(p,n)_**.
 | :----------------------------------------------------------: |
 | ![weak_speedup](./doc/img/weak_scalability/speedup_weak.png) |
 
-I risultati mostrano che il trend è più o meno sempre lo stesso, overro che la speedup aumenta quando il calcolo parallelo viene effettuato sulla stessa macchina ma diminuisce quando si passa su molteplici macchine. Questa caratteristica è dovuta al fatto che la comunicazione tra i vari processi situati su macchine diverse è molto dispendiosa in termini di tempo mentre quella che avviene all'interno della stessa macchina è molto più veloce. Per come è stata implementata la soluzione e per come si può osservare dai grafici precedenti, l'algoritmo lavora molto bene in locale con 8 processi (pari al numero massimo di vCPUs per una singola istanza t2.2xlarge).
+I risultati mostrano che il trend è più o meno sempre lo stesso, ovvero che la speedup aumenta quando il calcolo parallelo viene effettuato sulla stessa macchina ma diminuisce quando si passa su macchine diverse. Questa caratteristica è dovuta al fatto che la comunicazione tra i vari processi situati su macchine diverse è più dispendiosa in termini di tempo rispetto a quella che avviene all'interno della stessa macchina. Per come è stata implementata la soluzione e per come si può osservare dai grafici precedenti, l'algoritmo lavora molto bene in locale con 8 processi (pari al numero massimo di vCPUs per una singola istanza t2.2xlarge).
 
 Inoltre, questo accade anche perchè ad ogni iterazione dell'algoritmo c'è bisogno di una fase di sincronizzazione in cui ogni processo invia tutto ciò che serve a tutti gli altri processi. Ovviamente, per quanto detto pocanzi, questa fase è molto dispendiosa.
 

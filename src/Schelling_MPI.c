@@ -11,25 +11,25 @@
 
 #include "mpi.h"
 
-#define TEST 1
+#define TEST 0
 
 // #region Matrice
-#define ROWS 10     // Numero di righe della matrice
-#define COLUMNS 10  // Numero di colonne della matrice
+#define ROWS 50      // Numero di righe della matrice
+#define COLUMNS 100  // Numero di colonne della matrice
 // #endregion
 
 // #region Agenti
-#define AGENT_X 'X'                // Agente X (BLUE)
-#define AGENT_O 'O'                // Agente O (RED)
-#define EMPTY ' '                  // Casella vuota (' ')
-#define AGENT_X_PERCENTAGE 30      // Percentuale di agenti X (blu) all'interno della matrice
-#define AGENT_O_PERCENTAGE 30      // Percentuale di agenti O (rossi) all'interno della matrice
-#define SATISFIED_PERCENTAGE 33.3  // Percentuale di soddisfazione di un agente
+#define AGENT_X 'X'                  // Agente X (BLUE)
+#define AGENT_O 'O'                  // Agente O (RED)
+#define EMPTY ' '                    // Casella vuota (' ')
+#define AGENT_X_PERCENTAGE 30        // Percentuale di agenti X (blu) all'interno della matrice
+#define AGENT_O_PERCENTAGE 30        // Percentuale di agenti O (rossi) all'interno della matrice
+#define SATISFIED_PERCENTAGE 33.333  // Percentuale di soddisfazione di un agente
 // #endregion
 
 // #region Settings
 #define ROOT 0
-#define MAX_STEP 100
+#define MAX_STEP 1000
 #define SEED 15
 // #endregion
 
@@ -125,7 +125,17 @@ int main(int argc, char **argv) {
             test_init_matrix(matrix, AGENT_O_PERCENTAGE, AGENT_X_PERCENTAGE);
         else if (!init_matrix(matrix, AGENT_O_PERCENTAGE, AGENT_X_PERCENTAGE))
             err_finish(sendcounts, displacements, rows_per_process);
-        //print_matrix(ROWS, COLUMNS, matrix);
+
+        // Stampo info
+        time_t rawtime;
+        struct tm *timeinfo;
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+        printf("📆 Started at: %s", asctime(timeinfo));
+        printf("📟 Number of processes: %d\n", world_size);
+        printf("💯 Number of iterations: %d\n", MAX_STEP);
+        printf("\n❌ Matrice iniziale:\n");
+        print_matrix(ROWS, COLUMNS, matrix);
     }
 
     // * Calcolo della porzione della matrice da assegnare a ciascun processo
@@ -167,10 +177,10 @@ int main(int argc, char **argv) {
 
     // * Stampa matrice finale e calcolo della soddisfazione totale
     if (rank == ROOT) {
-        printf("\n");
+        printf("\n✅ Matrice finale:\n");
         print_matrix(ROWS, COLUMNS, matrix);
         calculate_total_satisfaction(rank, world_size, matrix);
-        printf("\n🕒 Time in ms = %f\n", end_time - start_time);
+        printf("🕒 Time in ms = %f\n", end_time - start_time);
     }
 
     free(matrix);
@@ -678,15 +688,16 @@ void calculate_total_satisfaction(int rank, int world_size, char *matrix) {
             }
 
     float average = ((double)satisfied_agents / (double)total_agents) * 100;
-    printf("\nAgenti totali: %d\n", total_agents);
-    printf("Agenti soddisfatti: %d\n", satisfied_agents);
+    printf("\nInfo:\n");
+    printf("\t- Agenti totali: %d\n", total_agents);
+    printf("\t- Agenti soddisfatti: %d\n", satisfied_agents);
     if (index != 0) {
-        printf("Agenti non soddisfatti: %d\n", index);
+        printf("\t- Agenti non soddisfatti: %d\n", index);
         /* printf("| ");
         for (int i = 0; i < index; i++)
             printf(YELLOW("%c") ": [%d][%d] | ", matrix[not_satisfied_agents[i].destination_row + not_satisfied_agents[i].destination_column], not_satisfied_agents[i].destination_row / COLUMNS, not_satisfied_agents[i].destination_column); */
     }
-    printf("\n\n🟢 Percentuale di soddisfazione: %.3f%%\n", average);
+    printf("\n🟢 Percentuale di soddisfazione: %.3f%%\n", average);
 
     free(not_satisfied_agents);
 }
@@ -700,7 +711,7 @@ void print_matrix(int rows_size, int column_size, char *matrix) {
     }
 
     for (i = 0; i < rows_size * column_size; i++) {
-        printf("| ");
+        //printf("| ");
 
         if (*(matrix + i) == AGENT_X) {
             printf(BLUE("%c") " ", *(matrix + i));
@@ -710,7 +721,7 @@ void print_matrix(int rows_size, int column_size, char *matrix) {
             printf("%c ", *(matrix + i));
 
         if ((i + 1) % column_size == 0 && i != 0)
-            printf("|\n");
+            printf("\n");
     }
 }
 
