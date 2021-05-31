@@ -259,7 +259,7 @@ Per valutare l'efficienza dell'esecuzione parallela per questo tipo di problema,
 
 ### Speedup
 
-La speedup è una misura che indica il vantaggio nel risolvere un determinato problema utilizzando la computazione parallela. Il valore è definito come il rapporto tra il tempo impiegato per risolvere il problema su un singolo elemento di computazione e il tempo impiegato per risolverlo su un computer o un sistema informatico in modo parallelo con **p** elementi di elaborazione identici.
+La speedup è una misura che indica il vantaggio nel risolvere un determinato problema utilizzando la computazione parallela. Il valore è definito come il rapporto tra il tempo impiegato per risolvere il problema su un singolo elemento di computazione (sequenziale) e il tempo impiegato per risolverlo su un computer o un sistema informatico in modo parallelo con **p** elementi di elaborazione identici.
 
 Dato un input **_I_** di dimensione **_n_**, il tempo della soluzione sequenziale su input **_I_** è indicato come **_T(1,n)_** e il tempo della soluzione parallela su input **_I_** è indicato come **_T(p,n)_**.\
 La **speedup** viene calcolata come **_S(p,n)_**=**_T(1,n)_**/**_T(p,n)_**.
@@ -284,11 +284,21 @@ La **speedup** viene calcolata come **_S(p,n)_**=**_T(1,n)_**/**_T(p,n)_**.
 | :----------------------------------------------------------: |
 | ![weak_speedup](./doc/img/weak_scalability/speedup_weak.png) |
 
-I risultati mostrano che il trend è più o meno sempre lo stesso, ovvero che la speedup aumenta quando il calcolo parallelo viene effettuato sulla stessa macchina ma diminuisce quando si passa su macchine diverse. Questa caratteristica è dovuta al fatto che la comunicazione tra i vari processi situati su macchine diverse è più dispendiosa in termini di tempo rispetto a quella che avviene all'interno della stessa macchina. Per come è stata implementata la soluzione e per come si può osservare dai grafici precedenti, l'algoritmo lavora molto bene in locale con 8 processi (pari al numero massimo di vCPUs per una singola istanza t2.2xlarge).
+I risultati mostrano che il trend è più o meno sempre lo stesso, ovvero che la speedup aumenta quando il calcolo parallelo viene effettuato sulla stessa macchina ma diminuisce quando si passa su macchine diverse.\
+Questa caratteristica è dovuta al fatto che la comunicazione tra i vari processi situati su macchine diverse è più dispendiosa in termini di tempo rispetto a quella che avviene all'interno della stessa macchina. Per come è stata implementata la soluzione e per come si può osservare dai grafici precedenti, l'algoritmo lavora molto bene in locale con 8 processi (pari al numero massimo di vCPUs per una singola istanza t2.2xlarge).
 
 Inoltre, questo accade anche perchè ad ogni iterazione dell'algoritmo c'è bisogno di una fase di sincronizzazione in cui ogni processo invia tutto ciò che serve a tutti gli altri processi. Ovviamente, per quanto detto pocanzi, questa fase è molto dispendiosa.
 
 ### Scalabilità forte
+
+Per scalabilità forte si intende il modo in cui **il tempo di soluzione varia** con il numero di processori per una **dimensione fissa del problema**.
+
+I test sono stati eseguiti con un numero di processori pari a **1, 2, 4, 8, 12, 16, 20, 24, 28, 32** e su 4 inputi: **100x100**, **1000x1000**, **2500x2500**, **5000x5000**.
+
+Generalmente, l'ideale sarebbe che il tempo di esecuzione diminuisca con l'aumentare dei processori in modo tale da distribuire il carico di lavoro su ognuno di essi.
+Questo, però, non è sempre possibile per quanto detto precedentemente, ovvero che ci potrebbero essere alcune tipologie di problemi in cui la soluzione parallela-distribuita funzioni **peggio** rispetto alla soluzione parallela su una singola macchina.
+
+I grafici seguenti rispecchiano esattamente quanto detto finora.
 
 |                           100x100                           |                            1000x1000                            |
 | :---------------------------------------------------------: | :-------------------------------------------------------------: |
@@ -298,6 +308,16 @@ Inoltre, questo accade anche perchè ad ogni iterazione dell'algoritmo c'è biso
 | :-------------------------------------------------------------: | :-------------------------------------------------------------: |
 | ![2500x2500](./doc/img/strong_scalability/strong_2500x2500.png) | ![5000x5000](./doc/img/strong_scalability/strong_5000x5000.png) |
 
+I grafici, quindi, evidenziano come la soluzione parallela su singola macchina diminuisca il tempo di esecuzione anche della metà, ma quando si passa alla computazione distribuita i tempi crescono notevolmente per colpa della comunicazione onerosa.
+
 ### Scalabilità debole
 
+Per scalabilità debole si intende il modo in cui il tempo di soluzione varia con il numero di processori per una **dimensione fissa** del problema **per processore**.
+
+Questo significa che se il test con un numero di processori pari ad **1** fosse stato eseguito con una matrice **100x100** (#elementi = 10000), allora il test con **2** processori sarebbe dovuto ... con una matrice **200x100** o **100x200** (#elementi = 20000) per avere esattamente il doppio degli elementi e una suddivisione di 10000 elementi per processore.
+
+Generalmente, l'ideale sarebbe che il tempo di esecuzione rimanga lineare all'aumentare della grandezza del problema e del numero di processori ma, come si può osservare dal seguente grafico, questo non succede.
+
 ![weak](./doc/img/weak_scalability/weak.png)
+
+Anche qui, questo è dovuto alla grande richiesta di comunicazione tra i vari processori sia per scambiarsi le righe di confine e le celle vuote, sia per la fase di sincronizzazione.
