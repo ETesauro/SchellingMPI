@@ -13,7 +13,7 @@
 
 #include "mpi.h"
 
-#define TEST 0
+#define DEMO 0
 
 // #region Matrice
 #define ROWS 100     // Numero di righe della matrice
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
     // * Inizializzazione matrice
     if (rank == ROOT) {
         matrix = malloc(ROWS * COLUMNS * sizeof(char *));
-        if (TEST)
+        if (DEMO)
             test_init_matrix(matrix, AGENT_O_PERCENTAGE, AGENT_X_PERCENTAGE);
         else if (!init_matrix(matrix, AGENT_O_PERCENTAGE, AGENT_X_PERCENTAGE))
             err_finish(sendcounts, displacements, rows_per_process);
