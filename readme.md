@@ -257,6 +257,8 @@ Per fare ciò, di seguito vengono riportate due immagini che mostrano la matrice
 I test sono stati effettuati su un cluster AWS composto da 4 istanze [t2.2xlarge](https://aws.amazon.com/it/ec2/instance-types/).\
 Per valutare l'efficienza dell'esecuzione parallela per questo tipo di problema, prenderemo in considerazione tre metriche: la [speedup](#Speedup), la [scalabilità forte](#Scalabilità-forte) e la [scalabilità debole](#Scalabilità-debole).
 
+Tutti i test e i relativi risultati sono disponibili [qui](doc/benchmarks.md).
+
 ### Speedup
 
 La speedup è una misura che indica il vantaggio nel risolvere un determinato problema utilizzando la computazione parallela. Il valore è definito come il rapporto tra il tempo impiegato per risolvere il problema su un singolo elemento di computazione (sequenziale) e il tempo impiegato per risolverlo su un computer o un sistema informatico in modo parallelo con **p** elementi di elaborazione identici.
