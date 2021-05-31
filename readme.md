@@ -1,4 +1,4 @@
-# Schelling's Model
+# Modello di Schelling
 
 Progetto per l'esame di **Programmazione Concorrente e Parallela su Cloud**.
 
@@ -7,17 +7,17 @@ Progetto per l'esame di **Programmazione Concorrente e Parallela su Cloud**.
 - MD5: **4bc390e61c1cd2a4001199d94b8d334d**
 - Amazon EC2 instance types: **t2.2xlarge**
 
-## Summary
+## Sommario
 
-[- Introduction](#Introduction): breve introduzione al problema\
-[- Parallel Solution Description](#Parallel-Solution-Description): analisi della soluzione adottata\
-[- Project structure](#Project-structure): come è organizzato il progetto\
-[- Execution instructions](#Execution-instructions): cosa fare per eseguire il programma\
-[- Implementation details](#Implementation-details): analisi dettagliata del codice\
-[- Correctness discussion](#Correctness-discussion): discussione circa la correttezza\
+[- Introduzione](#Introduzione): breve introduzione al problema\
+[- Descrizione della soluzione](#Descrizione-della-soluzione): analisi della soluzione adottata\
+[- Struttura del progetto](#Struttura-del-progetto): come è organizzato il progetto\
+[- Istruzioni per l'esecuzione](#Istruzioni-per-l'esecuzione): cosa fare per eseguire il programma\
+[- Dettagli dell'implementazione](#Dettagli-dell'implementazione): analisi dettagliata del codice\
+[- Discussione sulla correttezza](#Discussione-sulla-correttezza): discussione circa la correttezza dell'algoritmo\
 [- Benchmarks](#Benchmarks): benchmarks finali
 
-## Introduction
+## Introduzione
 
 Il modello di segregazione di Schelling è un modello agent-based che dimostra che avere persone con una preferenza "lieve" all'interno del proprio gruppo nei confronti nel gruppo stesso, porta inevitabilmente ad una società segregata.
 
@@ -28,17 +28,27 @@ L'obiettivo di tale progetto è quello di implementare il modello di segregazion
 Viene fornito un unico file (Schelling.c) che necessita di essere prima compilato e, poi, eseguito.\
 Al suo interno è possibile definire la grandezza della matrice di partenza a proprio piacimento, in quanto l'algoritmo lavora con matrici di qualsiasi dimensione.
 
-## Parallel Solution Description
+## Descrizione della soluzione
 
 La soluzione sviluppata segue 8 passi ben definiti.
 
 1. Il Master inizializza la matrice utilizzando le costanti definite all'interno del programma. Di default, questi valori sono:
 
-   - Numero di righe: **100**
-   - Numero di colonne: **100**
-   - Percentuale di agenti '**X**' all'interno della matrice: **30%**
-   - Percentuale di agenti '**O**' all'interno della matrice: **30%**
-   - Percentuale di soddisfazione degli agenti: **33.3%**
+   ```c
+   // #region Matrice
+   #define ROWS 100     // Numero di righe della matrice
+   #define COLUMNS 100  // Numero di colonne della matrice
+   // #endregion
+
+   // #region Agenti
+   #define AGENT_X 'X'                  // Agente X (BLU)
+   #define AGENT_O 'O'                  // Agente O (ROSSI)
+   #define EMPTY ' '                    // Casella vuota (' ')
+   #define AGENT_X_PERCENTAGE 30        // Percentuale di agenti X (blu) all'interno della matrice
+   #define AGENT_O_PERCENTAGE 30        // Percentuale di agenti O (rossi) all'interno della matrice
+   #define SATISFIED_PERCENTAGE 33.333  // Percentuale di soddisfazione di un agente
+   // #endregion
+   ```
 
 2. Suddivisione della matrice per numero di righe tra i vari processi
 3. Scambio delle righe tra i processi adiacenti per il calcolo della soddisfazione (locale) degli agenti della sottomatrice (la prima riga con il processo precedente e l'ultima riga con il processo successivo).
@@ -48,9 +58,9 @@ La soluzione sviluppata segue 8 passi ben definiti.
 7. Spostamento degli agenti
 8. Recupero della matrice finale per calcolare la soddisfazione globale
 
-> Nota: I punti **3-7** vengono ripetuti per un numero di volte pari **MAX_STEP**.
+> Nota: I punti **3-7** vengono ripetuti per un numero di volte pari **MAX_STEP** (di default pari a **100**).
 
-## Project structure
+## Struttura del progetto
 
 - src/
   - _**Schelling_MPI.c**_: file contenente il codice sorgente del programma
@@ -60,7 +70,7 @@ La soluzione sviluppata segue 8 passi ben definiti.
   - _**benchmarks**_.md: file di report di tutti i test effettuati
   - _**img**_/: cartella contente le immagini per la documentazione
 
-## Execution instructions
+## Istruzioni per l'esecuzione
 
 Dalla **root** del progetto:
 
@@ -78,7 +88,7 @@ Dalla **root** del progetto:
 
    dove 'X' è un numero intero.
 
-## Implementation details
+## Dettagli dell'implementazione
 
 ### Inizializzazione della matrice
 
@@ -139,8 +149,8 @@ Questa matrice, è formata da **un intero** per ogni cella **[i][j]**:
 - **1** -> l'agente **NON** è soddisfatto e vuole spostarsi
 - **-1** -> la cella in questione è vuota ed è utilizzabile per ospitare agenti che vogliono muoversi
 
-Ogni agente è soddisfatto se intorno a lui ha almeno il **33.3% di agenti simili**. Questo vuol dire che le celle contenenti l'agente opposto oppure quelle vuote sono considerate non corrette.
-Nel caso in cui un agente si trovi in un bordo della matrice, ovviamente i vicini non saranno 8 ma saranno da calcolare.
+Ogni agente è soddisfatto se intorno a lui ha almeno il **33.333% di agenti simili**. Questo vuol dire che le celle contenenti l'agente opposto oppure quelle vuote sono considerate non corrette.
+Nel caso in cui un agente si trovi in un bordo della matrice, ovviamente i vicini saranno di meno.
 
 ### Spostamento degli agenti
 
@@ -151,7 +161,7 @@ Il calcolo delle celle di destinazione è stato eseguito attraverso una chiamata
 MPI_Allgatherv(local_void_cells, number_of_local_void_cells, datatype, global_void_cells, number_of_global_void_cells, displacements, datatype, MPI_COMM_WORLD);
 ```
 
-A questo punto, l'array contenente le celle vuote di tutti i processi (**global_void_cells**) è stato mescolato e suddiviso equamente tra i processi. 'Equamente' significa che se un processo non avesse avuto alcun agente insoddisfatto, allora non avrebbe ricevuto una porzione di questo array perchè non avrebbe avuto bisogno.
+A questo punto, l'array contenente le celle vuote di tutti i processi (**global_void_cells**) è stato [mescolato](#Stessi-risultati) e suddiviso equamente tra i processi. 'Equamente' significa che se un processo non avesse avuto alcun agente insoddisfatto, allora non avrebbe ricevuto una porzione di questo array perchè non avrebbe avuto bisogno.
 
 ```C
 // Suddivido l'array contenente le celle di destinazione per gli spostamenti
@@ -179,7 +189,7 @@ L'idea che si è seguita è la seguente, ovvero, per un processo '**i**':
   ```
 
 - Se la riga della cella di destinazione **NON** è una riga della mia sottomatrice (i != rank), allora non posso direttamente effettuare lo spostamento.\
-  È stata creata una matrice che contiene sulle righe i processi **(0, 1, ...)** e sulle colonne la cella di destinazione dell'agente che vuole spostarsi (**{ row, col, agent }**), in modo tale da sapere, per qualsiasi processo, sia quanti elementi dovrò inviare, sia in quali posizioni dovranno essere salvati gli agenti.
+  È stata creata una matrice che contiene sulle righe i processi **(0, 1, ...)** e sulle colonne la cella di destinazione dell'agente che vuole spostarsi (**{ row, col, agent }**), in modo tale da sapere, per qualsiasi processo, sia quanti elementi dovrà inviare agli altri processi, sia in quali posizioni dovranno essere salvati gli agenti.
 
   ```C
   // * Altrimenti impacchetto tutto
@@ -203,7 +213,7 @@ L'idea che si è seguita è la seguente, ovvero, per un processo '**i**':
   synchronize(rank, world_size, num_elems_to_send_to, num_assigned_void_cells, data, original_rows, sub_matrix, move_agent_type);
   ```
 
-## Correctness discussion
+## Discussione sulla correttezza
 
 La correttezza per questo tipo di problema deve essere dimostrata, per ogni test, a partire dalla stessa matrice iniziale. È stato necessario, quindi, crearne una ad hoc per questa dimostrazione in quanto, normalmente, le matrici vengono inizializzate in maniera casuale.\
 Si procederà utilizzando una **matrice 10x10** e si dimostrerà che, a parità di input, l'esecuzione con lo stesso numero di processi produrrà sempre la [stessa matrice finale](#Stessi-risultati).\

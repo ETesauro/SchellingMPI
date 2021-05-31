@@ -14,8 +14,8 @@
 #define TEST 0
 
 // #region Matrice
-#define ROWS 50     // Numero di righe della matrice
-#define COLUMNS 80  // Numero di colonne della matrice
+#define ROWS 100     // Numero di righe della matrice
+#define COLUMNS 100  // Numero di colonne della matrice
 // #endregion
 
 // #region Agenti
