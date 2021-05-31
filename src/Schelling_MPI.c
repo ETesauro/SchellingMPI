@@ -1,6 +1,8 @@
 /**
- * * Schelling_3 V1
- * Differisce dal programma 2_Schelling V1 per spostare gli agenti ovunque nella matrice e non solo localmente
+ * Studente: Tesauro Emmanuel
+ * Matricola: 0522500988
+ * MD5: 4bc390e61c1cd2a4001199d94b8d334d
+ * Amazon EC2 instance type: t2.2xlarge
 */
 
 #include <assert.h>
@@ -72,9 +74,9 @@ void define_moveAgentType(MPI_Datatype *);  // Funzione per definire il tipo mov
 void print_matrix(int, int, char *);   // Funzione per stampare la matrice
 void err_finish(int *, int *, int *);  // Funzione per terminare l'esecuzione in caso di problemi
 
-//DEBUG
+// DEMO
 void test_init_matrix(char *matrix, int O_pct, int X_pct);
-//:DEBUG
+//: DEMO
 // #endregion
 
 int main(int argc, char **argv) {
@@ -733,7 +735,7 @@ void err_finish(int *sendcounts, int *displacements, int *rows_per_process) {
     exit(0);
 }
 
-// #region : *************** DEBUG ***************
+// #region DEMO
 void test_init_matrix(char *matrix, int O_pct, int X_pct) {
     int row, column, random;
 
@@ -838,4 +840,4 @@ void test_init_matrix(char *matrix, int O_pct, int X_pct) {
     matrix[9 * COLUMNS + 8] = AGENT_O;
     matrix[9 * COLUMNS + 9] = AGENT_X;
 }
-// #endregion: *************** DEBUG ***************
+// #endregion

@@ -5,7 +5,7 @@ Progetto per l'esame di **Programmazione Concorrente e Parallela su Cloud**.
 - Studente: **Tesauro Emmanuel**
 - Matricola: **0522500988**
 - MD5: **4bc390e61c1cd2a4001199d94b8d334d**
-- Amazon EC2 instance types: **t2.2xlarge**
+- Amazon EC2 instance type: **t2.2xlarge**
 
 ## Sommario
 
@@ -291,7 +291,7 @@ Inoltre, questo accade anche perchè ad ogni iterazione dell'algoritmo c'è biso
 
 ### Scalabilità forte
 
-Per scalabilità forte si intende il modo in cui **il tempo di soluzione varia** con il numero di processori per una **dimensione fissa del problema**.
+Per scalabilità forte si intende il modo in cui **il tempo di soluzione** varia con **il numero di processori** per una **dimensione fissa del problema**.
 
 I test sono stati eseguiti con un numero di processori pari a **1, 2, 4, 8, 12, 16, 20, 24, 28, 32** e su 4 inputi: **100x100**, **1000x1000**, **2500x2500**, **5000x5000**.
 
@@ -308,7 +308,7 @@ I grafici seguenti rispecchiano esattamente quanto detto finora.
 | :-------------------------------------------------------------: | :-------------------------------------------------------------: |
 | ![2500x2500](./doc/img/strong_scalability/strong_2500x2500.png) | ![5000x5000](./doc/img/strong_scalability/strong_5000x5000.png) |
 
-I grafici, quindi, evidenziano come la soluzione parallela su singola macchina diminuisca il tempo di esecuzione anche della metà, ma quando si passa alla computazione distribuita i tempi crescono notevolmente per colpa della comunicazione onerosa.
+I grafici, quindi, evidenziano come la soluzione parallela su singola macchina faccia diminuire il tempo di esecuzione anche della metà, ma quando si passa alla computazione distribuita i tempi crescono notevolmente per colpa della comunicazione onerosa.
 
 ### Scalabilità debole
 
